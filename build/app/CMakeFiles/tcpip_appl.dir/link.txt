@@ -1,0 +1,1 @@
+/usr/bin/cc -g CMakeFiles/tcpip_appl.dir/tcpip.c.o -o tcpip_appl  ../lib/liblinked_list.a 

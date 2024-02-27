@@ -1,0 +1,8 @@
+digraph "tcpip_appl" {
+node [
+  fontsize = "12"
+];
+    "node1" [ label = "tcpip_appl", shape = egg ];
+    "node0" [ label = "linked_list", shape = octagon ];
+    "node1" -> "node0" [ style = dotted ] // tcpip_appl -> linked_list
+}

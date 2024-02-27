@@ -1,0 +1,9 @@
+/mnt/e/network_projects/build/CMakeFiles/docs.dir
+/mnt/e/network_projects/build/CMakeFiles/edit_cache.dir
+/mnt/e/network_projects/build/CMakeFiles/rebuild_cache.dir
+/mnt/e/network_projects/build/lib/CMakeFiles/linked_list.dir
+/mnt/e/network_projects/build/lib/CMakeFiles/edit_cache.dir
+/mnt/e/network_projects/build/lib/CMakeFiles/rebuild_cache.dir
+/mnt/e/network_projects/build/app/CMakeFiles/tcpip_appl.dir
+/mnt/e/network_projects/build/app/CMakeFiles/edit_cache.dir
+/mnt/e/network_projects/build/app/CMakeFiles/rebuild_cache.dir
