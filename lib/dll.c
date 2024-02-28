@@ -51,7 +51,7 @@ dll_t * get_new_dll_node(dll_emp_t *data){
  * @warning :(optional)
  */
 
-#if 1
+#if 0
 /*Insert a Node at the End*/
 int dll_insert(dll_t **head, dll_emp_t *data){
 	dll_t *new_node, **curr;
@@ -72,7 +72,7 @@ int dll_insert(dll_t **head, dll_emp_t *data){
 
 #endif
 //Insert a node at the beginning
-#if 0
+#if 1
 int dll_insert(dll_t **head, dll_emp_t *data){
 	dll_t *new_node, **curr;
 	curr = head;
@@ -83,6 +83,7 @@ int dll_insert(dll_t **head, dll_emp_t *data){
 	}
 
 	new_node->next = *curr;
+	(*curr)->prev = new_node;
 	*curr = new_node;
 	return SUCCESS;
 }
@@ -104,9 +105,9 @@ int dll_insert(dll_t **head, dll_emp_t *data){
 
 
 void traverse_dll(dll_t **head){
-	dll_t **curr;
+	dll_t **curr, *temp;
 	curr = head;
-	/*while((*curr)->next){ */ // To Check if the prev member works properly
+	/*while((*curr)->next){*/  // To Check if the prev member works properly
 	while(*curr){
 		printf("<%s %d %d %s > -> ",(*curr)->data.emp_name,(*curr)->data.emp_num,(*curr)->data.emp_salary,(*curr)->data.emp_project);
 		curr = &(*curr)->next;
@@ -121,7 +122,7 @@ void traverse_dll(dll_t **head){
 	temp = (*curr)->prev;
 	printf("\n%p Previous\n",temp);
 	printf("%s\n",(temp)->data.emp_name);
-	*/
+*/	
 }
 
 

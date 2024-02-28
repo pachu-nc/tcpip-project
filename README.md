@@ -11,12 +11,12 @@ sudo apt-get install graphviz
 make prepare;make
 
 #Path for Library
-# Library name libsipl.a
+# Library name libdll.a liblinked_list.a
 build/lib
 
-# Path of application . app name: ipmc_test_appl
+# Path of application . app name: tcpip_appl
 build/app
 
 #Path for Documentation
-docs\html
+docs/html
 
