@@ -130,6 +130,44 @@ linked_list/fast:
 	cd /mnt/e/network_projects/build && $(MAKE) $(MAKESILENT) -f lib/CMakeFiles/linked_list.dir/build.make lib/CMakeFiles/linked_list.dir/build
 .PHONY : linked_list/fast
 
+# Convenience name for target.
+lib/CMakeFiles/dll.dir/rule:
+	cd /mnt/e/network_projects/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 lib/CMakeFiles/dll.dir/rule
+.PHONY : lib/CMakeFiles/dll.dir/rule
+
+# Convenience name for target.
+dll: lib/CMakeFiles/dll.dir/rule
+.PHONY : dll
+
+# fast build rule for target.
+dll/fast:
+	cd /mnt/e/network_projects/build && $(MAKE) $(MAKESILENT) -f lib/CMakeFiles/dll.dir/build.make lib/CMakeFiles/dll.dir/build
+.PHONY : dll/fast
+
+dll.o: dll.c.o
+.PHONY : dll.o
+
+# target to build an object file
+dll.c.o:
+	cd /mnt/e/network_projects/build && $(MAKE) $(MAKESILENT) -f lib/CMakeFiles/dll.dir/build.make lib/CMakeFiles/dll.dir/dll.c.o
+.PHONY : dll.c.o
+
+dll.i: dll.c.i
+.PHONY : dll.i
+
+# target to preprocess a source file
+dll.c.i:
+	cd /mnt/e/network_projects/build && $(MAKE) $(MAKESILENT) -f lib/CMakeFiles/dll.dir/build.make lib/CMakeFiles/dll.dir/dll.c.i
+.PHONY : dll.c.i
+
+dll.s: dll.c.s
+.PHONY : dll.s
+
+# target to generate assembly for a file
+dll.c.s:
+	cd /mnt/e/network_projects/build && $(MAKE) $(MAKESILENT) -f lib/CMakeFiles/dll.dir/build.make lib/CMakeFiles/dll.dir/dll.c.s
+.PHONY : dll.c.s
+
 linked_list.o: linked_list.c.o
 .PHONY : linked_list.o
 
@@ -162,7 +200,11 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... dll"
 	@echo "... linked_list"
+	@echo "... dll.o"
+	@echo "... dll.i"
+	@echo "... dll.s"
 	@echo "... linked_list.o"
 	@echo "... linked_list.i"
 	@echo "... linked_list.s"

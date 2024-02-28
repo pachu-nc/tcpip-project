@@ -93,6 +93,7 @@ tcpip_appl_EXTERNAL_OBJECTS =
 app/tcpip_appl: app/CMakeFiles/tcpip_appl.dir/tcpip.c.o
 app/tcpip_appl: app/CMakeFiles/tcpip_appl.dir/build.make
 app/tcpip_appl: lib/liblinked_list.a
+app/tcpip_appl: lib/libdll.a
 app/tcpip_appl: app/CMakeFiles/tcpip_appl.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/mnt/e/network_projects/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking C executable tcpip_appl"
 	cd /mnt/e/network_projects/build/app && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/tcpip_appl.dir/link.txt --verbose=$(VERBOSE)

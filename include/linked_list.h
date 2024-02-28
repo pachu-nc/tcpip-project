@@ -17,9 +17,9 @@
 typedef struct employee_ {
 	//char *emp_name;
 	char emp_name[20];
+	char emp_project[20];
 	int emp_num;
 	int emp_salary;
-	char emp_project[20];
 }emp_t;
 
 typedef struct node_ {
@@ -32,5 +32,7 @@ int insert(node_t **, emp_t *);
 void traverse_ll(node_t **);
 void search_ll(node_t **, int);
 
+#define offset_field(name_struct,field_name) \
+	(unsigned int) &((name_struct *)0)->field_name 
 
 #endif /*__LINKED_LIST_H*/

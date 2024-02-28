@@ -13,6 +13,7 @@ project(tcpip
 ## Defining Variables
 
 set(LIB_NAME linked_list)
+set(DLL_LIB_NAME dll)
 set(EXECUTABLE tcpip_appl)
 
 

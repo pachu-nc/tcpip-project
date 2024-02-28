@@ -4,11 +4,16 @@
 set(LIB_SRC
 	"linked_list.c")
 
+set(DLL_LIB_SRC
+	"dll.c")
+
 add_library(${LIB_NAME} STATIC ${LIB_SRC})
+add_library(${DLL_LIB_NAME} STATIC ${DLL_LIB_SRC})
 
 #include the incude directory
 
 target_include_directories(${LIB_NAME} PUBLIC "../include")
+target_include_directories(${DLL_LIB_NAME} PUBLIC "../include")
 
 #Enable Warnings
 
@@ -17,4 +22,10 @@ if(${ENABLE_WARNINGS})
 		${ENABLE_WARNINGS}
 		${ENABLE_WARNINGS_AS_ERRORS}
 		)
+
+	target_set_warnings(${DLL_LIB_NAME}
+		${ENABLE_WARNINGS}
+		${ENABLE_WARNINGS_AS_ERRORS}
+		)
+
 endif()

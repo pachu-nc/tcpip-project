@@ -143,6 +143,19 @@ linked_list/fast:
 .PHONY : linked_list/fast
 
 #=============================================================================
+# Target rules for targets named dll
+
+# Build rule for target.
+dll: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 dll
+.PHONY : dll
+
+# fast build rule for target.
+dll/fast:
+	$(MAKE) $(MAKESILENT) -f lib/CMakeFiles/dll.dir/build.make lib/CMakeFiles/dll.dir/build
+.PHONY : dll/fast
+
+#=============================================================================
 # Target rules for targets named tcpip_appl
 
 # Build rule for target.
@@ -164,6 +177,7 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... docs"
+	@echo "... dll"
 	@echo "... linked_list"
 	@echo "... tcpip_appl"
 .PHONY : help
