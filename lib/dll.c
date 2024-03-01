@@ -105,7 +105,7 @@ int dll_insert(dll_t **head, dll_emp_t *data){
 
 
 void traverse_dll(dll_t **head){
-	dll_t **curr, *temp;
+	dll_t **curr;
 	curr = head;
 	/*while((*curr)->next){*/  // To Check if the prev member works properly
 	while(*curr){
