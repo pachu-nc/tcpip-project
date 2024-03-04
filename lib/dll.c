@@ -21,12 +21,9 @@
 dll_t *initialize_dll(dll_t *dll) {
 	dll_t *head = NULL;
 	dll = (dll_t *) malloc(sizeof(dll_t));
-//	printf("1.%s",__func__);
 	dll->next = NULL;
-//	printf("2.%s",__func__);
 	dll->prev = NULL;
 	head = dll;
-//	printf("3.%s",__func__);
 	return head;
 }
 
