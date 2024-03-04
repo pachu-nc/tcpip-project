@@ -5,13 +5,37 @@
 #include "error_codes.h"
 #include "linked_list.h"
 
+/**
+ * @brief
+ *
+ * Description: Initialize a DLL
+ *
+ * @param node - Pointer to the Linked List 
+ *
+ * @return
+ *
+ * @bug :(optional)
+ * @warning :(optional)
+ */
+
+dll_t *initialize_dll(dll_t *dll) {
+	dll_t *head = NULL;
+	dll = (dll_t *) malloc(sizeof(dll_t));
+//	printf("1.%s",__func__);
+	dll->next = NULL;
+//	printf("2.%s",__func__);
+	dll->prev = NULL;
+	head = dll;
+//	printf("3.%s",__func__);
+	return head;
+}
+
 
 /**
  * @brief
  *
  * Description: Insert a new node at the end of LL
  *
- * @param root - head of the Linked list
  * @param data - Data of the structure
  *
  * @return
@@ -21,17 +45,16 @@
  */
 
 
-dll_t * get_new_dll_node(dll_emp_t *data){
+dll_t * get_new_dll_node(node_t *data){
+	
+	int i;
 	dll_t *new_node = (dll_t *) malloc (sizeof(dll_t));
-	//printf("\n %s %d %d %s \n",data->emp_name,data->emp_num,data->emp_salary,data->emp_project);
-	//printf("\nData = %p\n",data);
 	if(!new_node)
 		return (dll_t *)FAILURE;
-	//new_node->data.emp_name = (emp_t *) malloc(sizeof(data->emp_name)+1);
-	strcpy(new_node->data.emp_name, data->emp_name);
-	new_node->data.emp_num = data->emp_num;
-	new_node->data.emp_salary = data->emp_salary;
-	strcpy(new_node->data.emp_project, data->emp_project);
+	new_node->data = (node_t *) malloc(sizeof(node_t)+1);
+	strcpy(new_node->data->node_name, data->node_name);
+	for(i = 0; i < MAX_INTF_PER_NODE; i++)
+		new_node->data->intf[i] = data->intf[i];
 	new_node->next = NULL;
 	new_node->prev= NULL;
 	return new_node;
@@ -73,15 +96,16 @@ int dll_insert(dll_t **head, dll_emp_t *data){
 #endif
 //Insert a node at the beginning
 #if 1
-int dll_insert(dll_t **head, dll_emp_t *data){
+int dll_insert(dll_t **head, node_t *data){
 	dll_t *new_node, **curr;
 	curr = head;
+	//printf("1.%s\n",__func__);
 	new_node = get_new_dll_node(data);
+	//printf("2.%s\n",__func__);
 	if( *curr == NULL){
 		*curr = new_node;
 		return SUCCESS;
 	}
-
 	new_node->next = *curr;
 	(*curr)->prev = new_node;
 	*curr = new_node;
@@ -107,13 +131,21 @@ int dll_insert(dll_t **head, dll_emp_t *data){
 void traverse_dll(dll_t **head){
 	dll_t **curr;
 	curr = head;
+	unsigned int i =0;
+	interface_t *intf;
 	/*while((*curr)->next){*/  // To Check if the prev member works properly
-	while(*curr){
-		printf("<%s %d %d %s > -> ",(*curr)->data.emp_name,(*curr)->data.emp_num,(*curr)->data.emp_salary,(*curr)->data.emp_project);
+	while((*curr)->next){
+		printf(" Node Name = %s\n ",(*curr)->data->node_name);
+		for (i =0 ;i < MAX_INTF_PER_NODE; i++){
+			intf = (*curr)->data->intf[i];
+			if(!intf) break;
+			dump_interface(intf);
+		}
 		curr = &(*curr)->next;
+		printf("\n");
 	}
 
-	printf("NULL\n");
+//	printf("NULL\n");
 //To check if the prev member of the struct works properly
 /*
 	printf("NULL\n");

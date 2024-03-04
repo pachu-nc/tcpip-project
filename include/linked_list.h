@@ -1,5 +1,5 @@
 #ifndef __LINKED_LIST_H__
-#define __LINKED_LIST_H_
+#define __LINKED_LIST_H__
 
 
 
@@ -22,15 +22,15 @@ typedef struct employee_ {
 	int emp_salary;
 }emp_t;
 
-typedef struct node_ {
+typedef struct ll_node_ {
 	emp_t data;
-	struct node_ *next;
-}node_t;
+	struct ll_node_ *next;
+}ll_node_t;
 
 
-int insert(node_t **, emp_t *);
-void traverse_ll(node_t **);
-void search_ll(node_t **, int);
+int insert(ll_node_t **, emp_t *);
+void traverse_ll(ll_node_t **);
+void search_ll(ll_node_t **, int);
 
 #define offset_field(name_struct,field_name) \
 	(unsigned int) &((name_struct *)0)->field_name 

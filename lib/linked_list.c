@@ -5,12 +5,12 @@
 #include "error_codes.h"
 
 
-node_t * get_new_node(emp_t *data){
-	node_t *new_node = (node_t *) malloc (sizeof(node_t));
+ll_node_t * get_new_node(emp_t *data){
+	ll_node_t *new_node = (ll_node_t *) malloc (sizeof(ll_node_t));
 	//printf("\n %s %d %d %s \n",data->emp_name,data->emp_num,data->emp_salary,data->emp_project);
 	//printf("\nData = %p\n",data);
 	if(!new_node)
-		return (node_t *)FAILURE;
+		return (ll_node_t *)FAILURE;
 	//new_node->data.emp_name = (emp_t *) malloc(sizeof(data->emp_name)+1);
 	strcpy(new_node->data.emp_name, data->emp_name);
 	new_node->data.emp_num = data->emp_num;
@@ -59,9 +59,9 @@ int insert(node_t *root, int data){
 
 //Using Double pointers
 #if 1
-int insert(node_t **root, emp_t *data) {
+int insert(ll_node_t **root, emp_t *data) {
 //	printf("%s\n",__func__);	
-	node_t *new_node, **curr;
+	ll_node_t *new_node, **curr;
 	curr = root;
 
 //	printf("\n %s %d %d %s \n",data->emp_name,data->emp_num,data->emp_salary,data->emp_project);
@@ -133,8 +133,8 @@ int insert(node_t **root, emp_t *data) {
  * @warning :(optional)
  */
 
-void traverse_ll (node_t **root){
-	node_t **curr;
+void traverse_ll (ll_node_t **root){
+	ll_node_t **curr;
 	curr = root;
 ///	printf("\nTraversing\n");
 	while(*curr){
@@ -157,8 +157,8 @@ void traverse_ll (node_t **root){
  * @warning :(optional)
  */
 
-void search_ll(node_t **root, int data){
-	node_t **curr;
+void search_ll(ll_node_t **root, int data){
+	ll_node_t **curr;
 	curr = root;
 	printf("\nSearching...\n");
 	while(*curr){

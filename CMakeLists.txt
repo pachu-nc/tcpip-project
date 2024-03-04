@@ -13,7 +13,11 @@ project(tcpip
 ## Defining Variables
 
 set(LIB_NAME linked_list)
+set(GRAPH_LIB_NAME graph)
+set(LIB_CLI cli)
 set(DLL_LIB_NAME dll)
+set(SUB_DIR_LIB ut_parser)
+set(GLUE_DIR_LIB gluethread)
 set(EXECUTABLE tcpip_appl)
 
 
@@ -55,6 +59,7 @@ endif()
 
 
 add_subdirectory(lib)
+add_subdirectory(CommandParser)
 add_subdirectory(app)
 
 

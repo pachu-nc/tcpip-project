@@ -4,13 +4,73 @@
 #include "linked_list.h"
 #include "error_codes.h"
 #include "dll.h"
+#include "cmdtlv.h"
+#include "libcli.h"
+#include "graph.h"
 //node_t *root = NULL;
 //node_t *root = NULL;
+//
+#define CMCODE_SHOW_NODE	1
 
+node_t *root = NULL;
+//dll_t *head = NULL;
+
+#if 1
+int
+node_callback_handler(param_t *param, ser_buff_t *tlv_buf, op_mode enable_or_disable){
+    printf("%s() is called ...\n", __FUNCTION__);
+   // traverse_dll(&head);
+    return 0;
+}
+
+int
+validate_node_name(char *value){
+
+    printf("%s() is called with value = %s\n", __FUNCTION__, value);
+    return VALIDATION_SUCCESS; /*else return VALIDATION_FAILED*/
+}
+
+#endif
 int main() {
+#if 1
+	init_libcli();
+
+    	param_t *show   = libcli_get_show_hook();
+    	param_t *debug  = libcli_get_debug_hook();
+    	param_t *config = libcli_get_config_hook();
+   	param_t *clear  = libcli_get_clear_hook();
+    	param_t *run 	= libcli_get_run_hook();
 	int ret;	
-	node_t *root = NULL;
-	dll_t *head = NULL;
+	
+	/*Implementing CMD1: show node dll*/
+	{	
+		/*show node*/
+		static param_t node;
+		init_param(&node,
+			   CMD,
+			   "node",
+			   0,
+			   0,
+			   INVALID,
+			   0,
+			   "Help: Traverse DLL");
+		libcli_register_param(show,&node);
+		
+		{
+			static param_t node_name;
+			init_param(&node_name,
+			   	  LEAF,
+			   	  0,
+			   	  node_callback_handler,
+			   	  validate_node_name,
+			   	  STRING,
+			   	  "node-action",
+			   	  "Help: node action");
+		libcli_register_param(&node,&node_name);
+		set_param_cmd_code(&node_name, CMCODE_SHOW_NODE);
+		}
+	}
+#endif
 #if 0	
 	ret = insert(&root, 2); 
 	if (ret < 1) {
@@ -43,7 +103,7 @@ int main() {
 	//printf("\nAddress of root1 = %p\n",root);
 	//printf("%s\n",__func__);
 //DLL
-#if 1
+#if 0
 	dll_emp_t *emp1 = (dll_emp_t *) malloc(sizeof(dll_emp_t));
 	dll_emp_t *emp2 = (dll_emp_t *) malloc(sizeof(dll_emp_t));
 	dll_emp_t *emp3 = (dll_emp_t *) malloc(sizeof(dll_emp_t));
@@ -118,6 +178,8 @@ int main() {
 	TRAVERSE_LINKED_LIST(&root);
 	search_ll(&root,1116);
 #endif
+
+#if 0
 	ret = dll_insert(&head, emp1);
 	if (ret < 1) {
 		printf("\nFAILURE!!\n");
@@ -137,10 +199,19 @@ int main() {
 		printf("\nFAILURE!!\n");
 	}
 
-	traverse_dll(&head);
+	//traverse_dll(&head);
 
 	//TRAVERSE_DLL(&head);
 
 //	printf("Offset = %d\n",offset(dll_emp_t, emp_project));
+#endif	
+/*Graph Implementation*/
+#if 1
+	build_graph_topo();
+#endif
+	//support_cmd_negation(config);
+
+    	//start_shell();
+
 	return SUCCESS;
 }
