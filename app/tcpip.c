@@ -7,63 +7,13 @@
 #include "cmdtlv.h"
 #include "libcli.h"
 #include "graph.h"
-//node_t *root = NULL;
-//node_t *root = NULL;
-//
-#define CMCODE_SHOW_NODE	1
 
 graph_t *topo = NULL;
 
-//node_t *root = NULL;
 
-/*Generic Topology Commands*/
-#if 0
-static int
-show_nw_topology_handler(param_t *param, ser_buff_t *tlv_buf, op_mode enable_or_disable){
-    printf("%s() is called ...\n", __FUNCTION__);
-    int CMDCODE = 1;
-    CMDCODE = EXTRACT_CMD_CODE(tlv_buf);
-
-    switch(CMDCODE){
-	case CMDCODE_SHOW_NW_TOPOLOGY :
-		dump_nw_graph();
-		break;
-	default:
-		;}
-    return 0;
-}
-
-int
-validate_node_name(char *value){
-
-    printf("%s() is called with value = %s\n", __FUNCTION__, value);
-    return VALIDATION_SUCCESS; /*else return VALIDATION_FAILED*/
-}
-
-#endif
 int main() {
 
 	    nw_init_cli();
-#if 0
-	init_libcli();
-
-    	param_t *show   = libcli_get_show_hook();
-    	param_t *debug  = libcli_get_debug_hook();
-    	param_t *config = libcli_get_config_hook();
-   	param_t *clear  = libcli_get_clear_hook();
-    	param_t *run 	= libcli_get_run_hook();
-	int ret;	
-	
-	/*Implementing CMD1: show node dll*/
-	{	
-		/*show topology*/
-		static param_t &topology;
-		init_param(&topology, CMD, "topology",show_nw_topology_handler, 0, INVALID, 0, "Dump Complete Network topology");
-		libcli_register_param(show,&topology);
-		set_param_cmd_code(&topology, CMDCODE_SHOW_NW_TOPOLOGY);
-	}
-	support_cmd_negation(config);
-#endif
 #if 0	
 	ret = insert(&root, 2); 
 	if (ret < 1) {
@@ -198,11 +148,9 @@ int main() {
 
 //	printf("Offset = %d\n",offset(dll_emp_t, emp_project));
 #endif	
-/*Graph Implementation*/
-#if 1
+
+	/*Graph Implementation*/
 	topo = build_graph_topo();
-#endif
-	//support_cmd_negation(config);
 
     	start_shell();
 
