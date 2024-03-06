@@ -4,7 +4,7 @@
 #include "dll.h"
 #include "error_codes.h"
 #include "linked_list.h"
-
+#include"graph.h"
 /**
  * @brief
  *
@@ -46,12 +46,22 @@ dll_t * get_new_dll_node(node_t *data){
 	
 	int i;
 	dll_t *new_node = (dll_t *) malloc (sizeof(dll_t));
+	interface_t *interface;
 	if(!new_node)
 		return (dll_t *)FAILURE;
 	new_node->data = (node_t *) malloc(sizeof(node_t)+1);
 	strcpy(new_node->data->node_name, data->node_name);
-	for(i = 0; i < MAX_INTF_PER_NODE; i++)
+	for(i = 0; i < MAX_INTF_PER_NODE; i++){
+		interface = data->intf[i];
+		if(!interface)
+			continue;
 		new_node->data->intf[i] = data->intf[i];
+		new_node->data->intf[i]->intf_nw_prop.is_ipadd_config = data->intf[i]->intf_nw_prop.is_ipadd_config;
+		new_node->data->intf[i]->intf_nw_prop.mask = data->intf[i]->intf_nw_prop.mask;
+		strcpy(new_node->data->intf[i]->intf_nw_prop.ip_addr.ip_add, data->intf[i]->intf_nw_prop.ip_addr.ip_add);
+	}
+	new_node->data->node_nw_prop.is_lb_addr_config = data->node_nw_prop.is_lb_addr_config;
+	strcpy(new_node->data->node_nw_prop.lb_addr.ip_add, data->node_nw_prop.lb_addr.ip_add);
 	new_node->next = NULL;
 	new_node->prev= NULL;
 	return new_node;
@@ -130,13 +140,17 @@ void traverse_dll(dll_t **head){
 	curr = head;
 	unsigned int i =0;
 	interface_t *intf;
+	node_t *node;
 	/*while((*curr)->next){*/  // To Check if the prev member works properly
 	while((*curr)->next){
-		printf(" Node Name = %s\n ",(*curr)->data->node_name);
+		//printf(" Node Name = %s\n ",(*curr)->data->node_name);
+		node = (*curr)->data;
+		dump_node_nw_props(node);
 		for (i =0 ;i < MAX_INTF_PER_NODE; i++){
 			intf = (*curr)->data->intf[i];
 			if(!intf) break;
-			dump_interface(intf);
+			//dump_interface(intf);
+			dump_intf_props(intf);
 		}
 		curr = &(*curr)->next;
 		printf("\n");

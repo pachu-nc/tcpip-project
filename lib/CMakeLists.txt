@@ -8,7 +8,8 @@ set(DLL_LIB_SRC
 	"dll.c")
 
 set(GRAPH_LIB_SRC
-	"graph.c")
+	"graph.c"
+	"net.c")
 
 add_library(${LIB_NAME} STATIC ${LIB_SRC})
 add_library(${DLL_LIB_NAME} STATIC ${DLL_LIB_SRC})
