@@ -12,14 +12,24 @@
 //
 #define CMCODE_SHOW_NODE	1
 
-node_t *root = NULL;
-//dll_t *head = NULL;
+graph_t *topo = NULL;
 
-#if 1
-int
-node_callback_handler(param_t *param, ser_buff_t *tlv_buf, op_mode enable_or_disable){
+//node_t *root = NULL;
+
+/*Generic Topology Commands*/
+#if 0
+static int
+show_nw_topology_handler(param_t *param, ser_buff_t *tlv_buf, op_mode enable_or_disable){
     printf("%s() is called ...\n", __FUNCTION__);
-   // traverse_dll(&head);
+    int CMDCODE = 1;
+    CMDCODE = EXTRACT_CMD_CODE(tlv_buf);
+
+    switch(CMDCODE){
+	case CMDCODE_SHOW_NW_TOPOLOGY :
+		dump_nw_graph();
+		break;
+	default:
+		;}
     return 0;
 }
 
@@ -32,7 +42,9 @@ validate_node_name(char *value){
 
 #endif
 int main() {
-#if 1
+
+	    nw_init_cli();
+#if 0
 	init_libcli();
 
     	param_t *show   = libcli_get_show_hook();
@@ -44,32 +56,13 @@ int main() {
 	
 	/*Implementing CMD1: show node dll*/
 	{	
-		/*show node*/
-		static param_t node;
-		init_param(&node,
-			   CMD,
-			   "node",
-			   0,
-			   0,
-			   INVALID,
-			   0,
-			   "Help: Traverse DLL");
-		libcli_register_param(show,&node);
-		
-		{
-			static param_t node_name;
-			init_param(&node_name,
-			   	  LEAF,
-			   	  0,
-			   	  node_callback_handler,
-			   	  validate_node_name,
-			   	  STRING,
-			   	  "node-action",
-			   	  "Help: node action");
-		libcli_register_param(&node,&node_name);
-		set_param_cmd_code(&node_name, CMCODE_SHOW_NODE);
-		}
+		/*show topology*/
+		static param_t &topology;
+		init_param(&topology, CMD, "topology",show_nw_topology_handler, 0, INVALID, 0, "Dump Complete Network topology");
+		libcli_register_param(show,&topology);
+		set_param_cmd_code(&topology, CMDCODE_SHOW_NW_TOPOLOGY);
 	}
+	support_cmd_negation(config);
 #endif
 #if 0	
 	ret = insert(&root, 2); 
@@ -207,11 +200,11 @@ int main() {
 #endif	
 /*Graph Implementation*/
 #if 1
-	build_graph_topo();
+	topo = build_graph_topo();
 #endif
 	//support_cmd_negation(config);
 
-    	//start_shell();
+    	start_shell();
 
 	return SUCCESS;
 }

@@ -98,7 +98,7 @@ void dump_graph(graph_t *graph) {
 	printf("\n======== Topology Name = %s =========\n\n",graph->topology_name);
 	traverse_dll(&graph->node_list);
 }
-void  build_graph_topo() {
+graph_t *build_graph_topo() {
 	graph_t *topo = create_new_graph("Generic Graph");
 	node_t *R0_re = create_graph_node(topo, "R0_re");
 	node_t *R1_re = create_graph_node(topo, "R1_re");
@@ -125,6 +125,8 @@ void  build_graph_topo() {
 	dll_insert(&topo->node_list, R0_re);
 	dll_insert(&topo->node_list, R1_re);
 	dll_insert(&topo->node_list, R2_re);
+
+	return topo;
 	//dump_graph(topo);
-	dump_nw_graph(topo);
+	//dump_nw_graph(topo);
 }

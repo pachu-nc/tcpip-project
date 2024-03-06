@@ -59,7 +59,7 @@ endif()
 
 
 add_subdirectory(lib)
-add_subdirectory(CommandParser)
+add_subdirectory(CommandParser1)
 add_subdirectory(app)
 
 

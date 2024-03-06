@@ -1,7 +1,8 @@
 #create an executable with the name hello_world and source file hello_world.c
 
 set(EXEC_SRC
-	"tcpip.c")
+	"tcpip.c"
+	"nwcli.c")
 
 add_executable(${EXECUTABLE} ${EXEC_SRC})
 
