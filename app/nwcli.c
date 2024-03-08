@@ -19,7 +19,6 @@ show_nw_topology_handler(param_t *param, ser_buff_t *tlv_buf, op_mode enable_or_
 
     switch(CMDCODE){
 	case CMDCODE_SHOW_NW_TOPOLOGY :
-		printf("\nComing in the case\n");
 		dump_nw_graph(topo);
 		break;
 	default:

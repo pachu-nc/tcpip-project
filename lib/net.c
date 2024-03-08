@@ -1,9 +1,10 @@
 #include "graph.h"
 #include <memory.h>
 #include <stdio.h>
-#include "dll.h"
+//#include "dll.h"
 #include "utils.h"
 #include <assert.h>
+#include <glthread.h>
 
 /*Just some Random number generator*/
 static unsigned int
@@ -79,8 +80,8 @@ void dump_intf_props(interface_t *interface){
     dump_interface(interface);
 
     if(interface->intf_nw_prop.is_ipadd_config){
-        printf("\t IP Addr = %s/%u", IF_IP(interface), interface->intf_nw_prop.mask);
-        printf("\t MAC : %x:%x:%x:%x:%x:%x\n",
+        printf("\tIP Addr = %s/%u", IF_IP(interface), interface->intf_nw_prop.mask);
+        printf("\tMAC : %x:%x:%x:%x:%x:%x\n",
                 IF_MAC(interface)[0], IF_MAC(interface)[1],
                 IF_MAC(interface)[2], IF_MAC(interface)[3],
                 IF_MAC(interface)[4], IF_MAC(interface)[5]);
@@ -108,5 +109,5 @@ void dump_nw_graph(graph_t *graph){
 
     printf("Topology Name = %s\n", graph->topology_name);
 
-    traverse_dll(&graph->node_list);
+    traverse_glnode(&graph->node_list);
 }

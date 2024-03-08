@@ -4,8 +4,11 @@
 set(LIB_SRC
 	"linked_list.c")
 
+#set(DLL_LIB_SRC
+#	"dll.c")
+
 set(DLL_LIB_SRC
-	"dll.c")
+	"glthread.c")
 
 set(GRAPH_LIB_SRC
 	"graph.c"

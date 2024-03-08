@@ -2,8 +2,7 @@
 #define __GRAPH_H__
 
 #include <stddef.h>
-//include "dll.h"
-#include "glthread.h"
+#include "dll.h"
 #include "net.h"
 #define MAX_NAME_SIZE		20
 #define MAX_TOPOLOGY_NAME	32
@@ -56,7 +55,6 @@ typedef struct link_ {
 typedef struct node_ {
 	char node_name[MAX_INTF_PER_NODE];
 	interface_t *intf[30];
-	glthread_t glnode;
 	node_nw_prop_t node_nw_prop;
 }node_t;
 
@@ -70,7 +68,7 @@ typedef struct node_ {
 
 typedef struct graph_ {
 	char topology_name[MAX_TOPOLOGY_NAME]; /*Name of the graph topology*/
-	glthread_t node_list;	/*It is a linked list of nodes.*/
+	dll_t *node_list;	/*It is a linked list of nodes.*/
 }graph_t;	
 
 

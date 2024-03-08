@@ -1,7 +1,6 @@
 #include <assert.h>
 #include "graph.h"
-//#include "dll.h"
-#include "glthread.h"
+#include "dll.h"
 
 
 /**
@@ -20,8 +19,9 @@
 graph_t *
 create_new_graph(char *topology_name) {
 	graph_t *graph = (graph_t *) malloc(sizeof(graph_t));
+	dll_t *head;
 	strcpy(graph->topology_name,topology_name);
-	initialize_glthread(&graph->node_list);
+	head = init_glthread(&graph->node_list);
 	return graph;
 }
 
@@ -45,8 +45,6 @@ node_t *
 create_graph_node(graph_t *graph, char *node_name){
 	node_t *new_node = (node_t *) malloc(sizeof(node_t));
 	strcpy(new_node->node_name, node_name);
-	insert_glnode(&graph->node_list, &new_node->glnode);
-	return new_node;
 } 
 
 void
@@ -97,7 +95,7 @@ void dump_interface(interface_t *interface){
 }
 void dump_graph(graph_t *graph) {
 	printf("\n======== Topology Name = %s =========\n\n",graph->topology_name);
-	traverse_glnode(&graph->node_list);
+	traverse_dll(&graph->node_list);
 }
 graph_t *build_graph_topo() {
 	graph_t *topo = create_new_graph("Generic Graph");
@@ -123,7 +121,11 @@ graph_t *build_graph_topo() {
 
 
 	interface_t *interface = get_node_if_by_name(R0_re, "eth0/4");
+	dll_insert(&topo->node_list, R0_re);
+	dll_insert(&topo->node_list, R1_re);
+	dll_insert(&topo->node_list, R2_re);
+
 	return topo;
 	//dump_graph(topo);
-	dump_nw_graph(topo);
+	//dump_nw_graph(topo);
 }
