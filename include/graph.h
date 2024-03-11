@@ -5,6 +5,7 @@
 //include "dll.h"
 #include "glthread.h"
 #include "net.h"
+#include <assert.h>
 #define MAX_NAME_SIZE		20
 #define MAX_TOPOLOGY_NAME	32
 #define MAX_INTF_PER_NODE	20
@@ -12,7 +13,7 @@
 /*Forward Declaration */
 typedef struct node_ node_t;
 typedef struct link_ link_t;
-typedef struct dll_node_ dll_t;
+typedef struct glthread_ glthread_t;
 
 /*@brief
  *
@@ -50,6 +51,7 @@ typedef struct link_ {
  *
  * @param: node_name		-	Name of the Graph Topology
  * @param: intf 		- 	List of Empty interfaces in this node. If a member element of a array is empty then the slot is empty.
+ * 
  *
  * */
 
@@ -57,6 +59,8 @@ typedef struct node_ {
 	char node_name[MAX_INTF_PER_NODE];
 	interface_t *intf[30];
 	glthread_t glnode;
+	int udp_port_number; /*Unque udp port num that the node listens on*/
+	int udp_sock_fd;	/*udp sock fd that is opened by the node*/
 	node_nw_prop_t node_nw_prop;
 }node_t;
 
@@ -121,5 +125,20 @@ get_node_if_by_name(node_t *node, char *if_name){
 		}
 	}
 	return NULL;
+}
+
+static inline node_t *
+get_node_by_node_name(graph_t *topo, char *node_name){
+
+    node_t *node;
+    glthread_t *curr;
+
+    ITERATE_GLTHREAD_BEGIN(&topo->node_list, curr){
+
+        node = return_glnode_pointer(curr);
+        if(strncmp(node->node_name, node_name, strlen(node_name)) == 0)
+            return node;
+    } ITERATE_GLTHREAD_END(&topo->node_list, curr);
+    return NULL;
 }
 #endif /*GRAPH_H__*/
