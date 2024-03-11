@@ -13,12 +13,8 @@ target_include_directories(${SUB_DIR_LIB} PUBLIC "../../include")
 #Enable Warnings
 
 if(${ENABLE_WARNINGS})
-	target_set_warnings(${LIB_NAME}
-		${ENABLE_WARNINGS}
-		${ENABLE_WARNINGS_AS_ERRORS}
-		)
-
-	target_set_warnings(${DLL_LIB_NAME}
+	
+	target_set_warnings(${GLUE_DIR_LIB}
 		${ENABLE_WARNINGS}
 		${ENABLE_WARNINGS_AS_ERRORS}
 		)

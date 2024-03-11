@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "linked_list.h"
 #include "error_codes.h"
 #include "dll.h"
 #include "cmdtlv.h"
@@ -152,6 +151,15 @@ int main() {
 	/*Graph Implementation*/
 	topo = build_graph_topo();
 
+	/*Sleep for sometime*/
+
+	sleep(2);
+
+	node_t *snode = get_node_by_node_name(topo, "R0_re");
+	interface_t *oif = get_node_if_by_name(snode, "eth0/0");
+
+	char msg[] = "Hello How are You!!";
+	send_pkt_out(msg, strlen(msg),oif);
     	start_shell();
 
 	return SUCCESS;

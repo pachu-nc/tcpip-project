@@ -69,12 +69,12 @@ typedef struct tc_result_ {
     uint16_t step_no;
     bool pass;
     bool pattern_match;
-    glthread_t glue;
+    glthread1_t glue;
 } tc_result_t;
 GLTHREAD_TO_STRUCT(glue_to_tc_result, tc_result_t, glue);
 
 static void
-tc_append_result(glthread_t *head, uint16_t step_no, bool pass, bool match) {
+tc_append_result(glthread1_t *head, uint16_t step_no, bool pass, bool match) {
 
     tc_result_t *res = (tc_result_t *)calloc(1, sizeof(tc_result_t));
     res->step_no = step_no;
@@ -85,10 +85,10 @@ tc_append_result(glthread_t *head, uint16_t step_no, bool pass, bool match) {
 }
 
 static void
-tc_print_result (glthread_t *head) {
+tc_print_result (glthread1_t *head) {
 
     int rc = 0;
-    glthread_t *curr;
+    glthread1_t *curr;
     tc_result_t *res;
     char buff[128];
     int pass_cnt = 0, fail_cnt = 0, total_cnt = 0;
@@ -117,9 +117,9 @@ tc_print_result (glthread_t *head) {
 }
 
 static void
-tc_cleanup_result_list(glthread_t *result_head) {
+tc_cleanup_result_list(glthread1_t *result_head) {
 
-    glthread_t *curr;
+    glthread1_t *curr;
     tc_result_t *res;
 
     ITERATE_GLTHREAD_BEGIN(result_head, curr) {
@@ -139,7 +139,7 @@ run_test_case(char *file_name, uint16_t tc_no) {
     char buff[128];
     char *fget_ptr;
     bool tc_found = false;
-    glthread_t result_head;
+    glthread1_t result_head;
     uint16_t current_tc_no;
     char line[512];
     uint16_t current_step_no;

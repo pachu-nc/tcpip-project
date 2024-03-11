@@ -2,8 +2,12 @@
 #include "graph.h"
 //#include "dll.h"
 #include "glthread.h"
+#include <stdlib.h>
 
 
+
+
+extern void network_start_pkt_receiver_thread(graph_t *topo);
 /**
  * @brief
  *
@@ -43,10 +47,11 @@ create_new_graph(char *topology_name) {
 
 node_t *
 create_graph_node(graph_t *graph, char *node_name){
-	node_t *new_node = (node_t *) malloc(sizeof(node_t));
-	strcpy(new_node->node_name, node_name);
-	insert_glnode(&graph->node_list, &new_node->glnode);
-	return new_node;
+	node_t *node = calloc(1, sizeof(node_t));
+	strcpy(node->node_name, node_name);
+	init_udp_socket(node);
+	insert_glnode(&graph->node_list, &node->glnode);
+	return node;
 } 
 
 void
@@ -99,8 +104,11 @@ void dump_graph(graph_t *graph) {
 	printf("\n======== Topology Name = %s =========\n\n",graph->topology_name);
 	traverse_glnode(&graph->node_list);
 }
+
+
 graph_t *build_graph_topo() {
 	graph_t *topo = create_new_graph("Generic Graph");
+	
 	node_t *R0_re = create_graph_node(topo, "R0_re");
 	node_t *R1_re = create_graph_node(topo, "R1_re");
 	node_t *R2_re = create_graph_node(topo, "R2_re");
@@ -120,10 +128,7 @@ graph_t *build_graph_topo() {
 	node_set_loopback_address(R2_re, "122.1.1.2");
 	node_set_intf_ip_address(R2_re, "eth0/3", "30.1.1.2", 24);
 	node_set_intf_ip_address(R2_re, "eth0/5", "40.1.1.2", 24);
-
-
-	interface_t *interface = get_node_if_by_name(R0_re, "eth0/4");
+	
+	network_start_pkt_receiver_thread(topo);
 	return topo;
-	//dump_graph(topo);
-	dump_nw_graph(topo);
 }

@@ -39,7 +39,7 @@ typedef struct _person{
 
     int age;
     int weight;
-    glthread_t glthread;
+    glthread1_t glthread;
 } person_t ;
 
 int 
@@ -53,7 +53,7 @@ senior_citizen(person_t *p1, person_t *p2){
 #define offset(struct_name, fld_name) \
     (unsigned int)&(((struct_name *)0)->fld_name)
 
-GLTHREAD_TO_STRUCT(thread_to_person, person_t, glthread);
+GLTHREAD1_TO_STRUCT(thread_to_person, person_t, glthread);
 
 int main(int argc, char **argv){
 
@@ -70,7 +70,7 @@ int main(int argc, char **argv){
     person[4].age = 9;
     person[4].weight = 10;
 
-    glthread_t base_glthread;
+    glthread1_t base_glthread;
     init_glthread(&base_glthread);
 
     glthread_priority_insert(&base_glthread, &person[4].glthread, senior_citizen, offset(person_t, glthread));
@@ -79,7 +79,7 @@ int main(int argc, char **argv){
     glthread_priority_insert(&base_glthread, &person[1].glthread, senior_citizen, offset(person_t, glthread));
     glthread_priority_insert(&base_glthread, &person[0].glthread, senior_citizen, offset(person_t, glthread));
 
-    glthread_t *curr = NULL;
+    glthread1_t *curr = NULL;
     ITERATE_GLTHREAD_BEGIN(&base_glthread, curr){
 
         person_t *p = thread_to_person(curr);

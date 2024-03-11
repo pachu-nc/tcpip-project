@@ -19,7 +19,6 @@
  */
 
 void initialize_glthread(glthread_t *glnode) {
-	
 	glnode->next = NULL;
 	glnode->prev = NULL;
 }
@@ -43,9 +42,7 @@ void insert_glnode(glthread_t *base_node, glthread_t *glnode){
         curr = base_node;
         
 	initialize_glthread(glnode);
-
         if(curr->next == NULL) {
-                printf("\nEmpty Head\n");
                 curr->next = glnode;
                 glnode->prev = curr;
                 return;

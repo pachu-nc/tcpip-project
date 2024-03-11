@@ -35,14 +35,14 @@
 #include <stdlib.h>
 
 void
-init_glthread(glthread_t *glthread){
+init_glthread(glthread1_t *glthread){
 
     glthread->left = NULL;
     glthread->right = NULL;
 }
 
 void
-glthread_add_next(glthread_t *curr_glthread, glthread_t *new_glthread){
+glthread_add_next(glthread1_t *curr_glthread, glthread1_t *new_glthread){
 
     if(!curr_glthread->right){
         curr_glthread->right = new_glthread;
@@ -50,7 +50,7 @@ glthread_add_next(glthread_t *curr_glthread, glthread_t *new_glthread){
         return;
     }
 
-    glthread_t *temp = curr_glthread->right;
+    glthread1_t *temp = curr_glthread->right;
     curr_glthread->right = new_glthread;
     new_glthread->left = curr_glthread;
     new_glthread->right = temp;
@@ -58,7 +58,7 @@ glthread_add_next(glthread_t *curr_glthread, glthread_t *new_glthread){
 }
 
 void
-glthread_add_before(glthread_t *curr_glthread, glthread_t *new_glthread){
+glthread_add_before(glthread1_t *curr_glthread, glthread1_t *new_glthread){
     
     if(!curr_glthread->left){
         new_glthread->left = NULL;
@@ -67,7 +67,7 @@ glthread_add_before(glthread_t *curr_glthread, glthread_t *new_glthread){
         return;
     }
     
-    glthread_t *temp = curr_glthread->left;
+    glthread1_t *temp = curr_glthread->left;
     temp->right = new_glthread;
     new_glthread->left = temp;
     new_glthread->right = curr_glthread;
@@ -75,7 +75,7 @@ glthread_add_before(glthread_t *curr_glthread, glthread_t *new_glthread){
 }
 
 void
-remove_glthread(glthread_t *curr_glthread){
+remove_glthread(glthread1_t *curr_glthread){
     
     if(!curr_glthread->left){
         if(curr_glthread->right){
@@ -98,9 +98,9 @@ remove_glthread(glthread_t *curr_glthread){
 }
 
 void
-delete_glthread_list(glthread_t *glthread_head){
+delete_glthread_list(glthread1_t *glthread_head){
 
-    glthread_t *glthreadptr = NULL;
+    glthread1_t *glthreadptr = NULL;
                
     ITERATE_GLTHREAD_BEGIN(glthread_head, glthreadptr){
         remove_glthread(glthreadptr);
@@ -108,9 +108,9 @@ delete_glthread_list(glthread_t *glthread_head){
 }
 
 void
-glthread_add_last(glthread_t *glthread_head, glthread_t *new_glthread){
+glthread_add_last(glthread1_t *glthread_head, glthread1_t *new_glthread){
 
-    glthread_t *glthreadptr = NULL,
+    glthread1_t *glthreadptr = NULL,
                *prevglthreadptr = NULL;
     
     ITERATE_GLTHREAD_BEGIN(glthread_head, glthreadptr){
@@ -124,10 +124,10 @@ glthread_add_last(glthread_t *glthread_head, glthread_t *new_glthread){
 }
 
 unsigned int
-get_glthread_list_count(glthread_t *glthread_head){
+get_glthread_list_count(glthread1_t *glthread_head){
 
     unsigned int count = 0;
-    glthread_t *glthreadptr = NULL;
+    glthread1_t *glthreadptr = NULL;
 
     ITERATE_GLTHREAD_BEGIN(glthread_head, glthreadptr){
         count++;
@@ -137,13 +137,13 @@ get_glthread_list_count(glthread_t *glthread_head){
 
 
 void
-glthread_priority_insert(glthread_t *glthread_head, 
-                         glthread_t *glthread,
+glthread_priority_insert(glthread1_t *glthread_head, 
+                         glthread1_t *glthread,
                          int (*comp_fn)(void *, void *),
                          int offset){
 
 
-    glthread_t *curr = NULL,
+    glthread1_t *curr = NULL,
                *prev = NULL;
 
     init_glthread(glthread);
@@ -186,10 +186,10 @@ glthread_priority_insert(glthread_t *glthread_head,
     glthread_add_next(prev, glthread);
 } 
 
-glthread_t *
-dequeue_glthread_first(glthread_t *base_glthread){
+glthread1_t *
+dequeue_glthread_first(glthread1_t *base_glthread){
 
-    glthread_t *temp;
+    glthread1_t *temp;
     if(!base_glthread->right)
         return NULL;
     temp = base_glthread->right;
@@ -199,8 +199,8 @@ dequeue_glthread_first(glthread_t *base_glthread){
 
 #if 0
 void *
-gl_thread_search(glthread_t *glthread_head, 
-                 void *(*thread_to_struct_fn)(glthread_t *), 
+gl_thread_search(glthread1_t *glthread_head, 
+                 void *(*thread_to_struct_fn)(glthread1_t *), 
                  void *key, 
                  int (*comparison_fn)(void *, void *)){
 
