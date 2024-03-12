@@ -80,8 +80,8 @@ tc_append_result(glthread1_t *head, uint16_t step_no, bool pass, bool match) {
     res->step_no = step_no;
     res->pass = pass;
     res->pattern_match = match;
-    init_glthread(&res->glue);
-    glthread_add_last(head, &res->glue);
+    //init_glthread(&res->glue);
+    //glthread_add_last(head, &res->glue);
 }
 
 static void
@@ -124,8 +124,8 @@ tc_cleanup_result_list(glthread1_t *result_head) {
 
     ITERATE_GLTHREAD_BEGIN(result_head, curr) {
 
-        remove_glthread(curr);
-        res = glue_to_tc_result(curr);
+        //remove_glthread(curr);
+        //res = glue_to_tc_result(curr);
         free(res);
     }
     ITERATE_GLTHREAD_END(result_head, curr);
@@ -147,7 +147,7 @@ run_test_case(char *file_name, uint16_t tc_no) {
     CMD_PARSE_STATUS status = UNKNOWN;
 
      fget_ptr = NULL;
-    init_glthread(&result_head);
+   // init_glthread(&result_head);
 
     FILE *fp = fopen (file_name, "r");
     assert(fp);

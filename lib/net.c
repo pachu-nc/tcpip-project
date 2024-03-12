@@ -1,7 +1,6 @@
 #include "graph.h"
 #include <memory.h>
 #include <stdio.h>
-//#include "dll.h"
 #include "utils.h"
 #include <assert.h>
 #include <glthread.h>
@@ -43,8 +42,8 @@ bool_t node_set_loopback_address(node_t *node, char *ip_addr) {
 	
 	node->node_nw_prop.is_lb_addr_config = TRUE;
 	strcpy(NODE_LO_ADDR(node),ip_addr);
-/*	strncpy(NODE_LO_ADDR(node), ip_addr, 16);
-	NODE_LO_ADDR(node)[15] = '\0';*/
+	strncpy(NODE_LO_ADDR(node), ip_addr, 16);
+	NODE_LO_ADDR(node)[15] = '\0';
 	return TRUE;
 }
 bool_t node_set_intf_ip_address(node_t *node, char *local_if, char *ip_addr, char mask) {
@@ -53,7 +52,9 @@ bool_t node_set_intf_ip_address(node_t *node, char *local_if, char *ip_addr, cha
 	
 	if(!interface) assert(0);
 
-	strcpy(IF_IP(interface),ip_addr);
+//	strcpy(IF_IP(interface),ip_addr);
+	strncpy(IF_IP(interface),ip_addr,sizeof(ip_add_t)+1);
+	IF_IP(interface)[sizeof(ip_add_t)] = '\0';
 	interface->intf_nw_prop.mask = TRUE;
 	interface->intf_nw_prop.is_ipadd_config = TRUE;
 	return TRUE;
@@ -102,12 +103,24 @@ void dump_intf_props(interface_t *interface){
 }
 
 void dump_nw_graph(graph_t *graph){
-
+    printf("\n%s %d\n",__func__,__LINE__);
     node_t *node;
     interface_t *interface;
+    glthread_t *curr;
     unsigned int i;
+    printf("\n%s %d graph = %x\n",__func__,__LINE__,graph);
 
     printf("Topology Name = %s\n", graph->topology_name);
+    printf("\n%s %d\n",__func__,__LINE__);
+    ITERATE_GLTHREAD_BEGIN(&graph->node_list, curr){
+	node = return_glnode_pointer(curr);
+	dump_node_nw_props(node);
+	for( i = 0; i < MAX_INTF_PER_NODE; i++){
+           	interface = node->intf[i];
+            	if(!interface) break;
+            	dump_intf_props(interface);
+       	}
+    } ITERATE_GLTHREAD_END(&graph->node_list, curr)
 
-    traverse_glnode(&graph->node_list);
+    //traverse_glnode(&graph->node_list);
 }

@@ -12,7 +12,7 @@ set(CLI_LIB_SRC
 
 
 add_subdirectory(ut)
-add_subdirectory(gluethread)
+#add_subdirectory(gluethread)
 #AUX_SOURCE_DIRECTORY(ut/utinfra SUB_DIR)
 add_library(${LIB_CLI} STATIC ${CLI_LIB_SRC})
 

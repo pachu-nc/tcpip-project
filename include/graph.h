@@ -56,7 +56,7 @@ typedef struct link_ {
  * */
 
 typedef struct node_ {
-	char node_name[MAX_INTF_PER_NODE];
+	char node_name[MAX_NAME_SIZE];
 	interface_t *intf[30];
 	glthread_t glnode;
 	int udp_port_number; /*Unque udp port num that the node listens on*/
@@ -80,9 +80,13 @@ typedef struct graph_ {
 
 
 graph_t *build_graph_topo(void);
+graph_t *build_linear_topo(void);
 
 node_t  *create_graph_node(graph_t *, char*);
 
+node_t *create_graph_node(graph_t *topo, char *node_name);
+
+graph_t *create_new_graph(char *graph_name);
 /*Helper functions*/
 
 static inline int

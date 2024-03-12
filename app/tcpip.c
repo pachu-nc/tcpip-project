@@ -6,9 +6,12 @@
 #include "cmdtlv.h"
 #include "libcli.h"
 #include "graph.h"
+#include "comm.h"
 
 graph_t *topo = NULL;
 
+extern graph_t *build_graph_topo();
+extern graph_t *build_linear_topo();
 
 int main() {
 
@@ -149,8 +152,10 @@ int main() {
 #endif	
 
 	/*Graph Implementation*/
-	topo = build_graph_topo();
-
+	//topo = build_graph_topo();
+	topo = build_linear_topo();
+//	printf("Topology = %x\n", topo);
+#if 0
 	/*Sleep for sometime*/
 
 	sleep(2);
@@ -160,6 +165,7 @@ int main() {
 
 	char msg[] = "Hello How are You!!";
 	send_pkt_out(msg, strlen(msg),oif);
+#endif
     	start_shell();
 
 	return SUCCESS;

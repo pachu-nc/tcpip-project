@@ -42,7 +42,8 @@ void insert_glnode(glthread_t *base_node, glthread_t *glnode){
         curr = base_node;
         
 	initialize_glthread(glnode);
-        if(curr->next == NULL) {
+        if(base_node->next == NULL) {
+        //if(curr->next == NULL) {
                 curr->next = glnode;
                 glnode->prev = curr;
                 return;
@@ -60,7 +61,8 @@ node_t * return_glnode_pointer (glthread_t *curr ){
         return  (node_t *)( (char *)curr - (char *)offset(node_t,glnode));
 }
 void traverse_glnode(glthread_t **head){
-        glthread_t **curr;
+    printf("\n%s %d\n",__func__,__LINE__);
+    glthread_t **curr;
 	interface_t *intf;
 	unsigned int i;
         curr = head;

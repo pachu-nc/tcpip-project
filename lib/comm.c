@@ -160,7 +160,7 @@ _network_start_receiver_thread( void * arg){
 			sock_max_fd = node->udp_sock_fd;
 
 		FD_SET(node->udp_sock_fd, &backup_sock_fd_set);
-	} ITERATE_GLTHREAD_END(&ropo->node_list, curr)
+	} ITERATE_GLTHREAD_END(&topo->node_list, curr)
 
 	while(1) {
 		memcpy(&active_sock_fd_set, &backup_sock_fd_set, sizeof(fd_set));

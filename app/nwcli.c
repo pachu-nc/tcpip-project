@@ -3,8 +3,7 @@
 #include "libcli.h"
 #include "cmdtlv.h"
 #include "cmdcodes.h"
-
-
+#include "net.h"
 
 extern graph_t *topo;
 
@@ -19,6 +18,8 @@ show_nw_topology_handler(param_t *param, ser_buff_t *tlv_buf, op_mode enable_or_
 
     switch(CMDCODE){
 	case CMDCODE_SHOW_NW_TOPOLOGY :
+		printf("%s graph = %x",__func__,topo);
+//    		printf("Topology Name = %s\n", topo->topology_name);
 		dump_nw_graph(topo);
 		break;
 	default:

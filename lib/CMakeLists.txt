@@ -13,7 +13,8 @@ set(DLL_LIB_SRC
 set(GRAPH_LIB_SRC
 	"graph.c"
 	"net.c"
-	"comm.c")
+	"comm.c"
+	"topologies.c")
 
 #add_library(${LIB_NAME} STATIC ${LIB_SRC})
 add_library(${DLL_LIB_NAME} STATIC ${DLL_LIB_SRC})

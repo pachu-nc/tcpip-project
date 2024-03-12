@@ -1,9 +1,9 @@
 #include <assert.h>
 #include "graph.h"
-//#include "dll.h"
 #include "glthread.h"
 #include <stdlib.h>
 
+//graph_t *topo = NULL;
 
 
 
@@ -23,8 +23,11 @@ extern void network_start_pkt_receiver_thread(graph_t *topo);
 
 graph_t *
 create_new_graph(char *topology_name) {
-	graph_t *graph = (graph_t *) malloc(sizeof(graph_t));
-	strcpy(graph->topology_name,topology_name);
+	graph_t *graph = calloc(sizeof(graph_t),1);
+//	graph_t *graph = (graph_t *) malloc(sizeof(graph_t)+1);
+	//strcpy(graph->topology_name,topology_name);
+	strncpy(graph->topology_name,topology_name,MAX_TOPOLOGY_NAME);
+	graph->topology_name[MAX_TOPOLOGY_NAME] = '\0';
 	initialize_glthread(&graph->node_list);
 	return graph;
 }
@@ -47,8 +50,11 @@ create_new_graph(char *topology_name) {
 
 node_t *
 create_graph_node(graph_t *graph, char *node_name){
+	//node_t *node = malloc(sizeof(node_t)+1);
 	node_t *node = calloc(1, sizeof(node_t));
-	strcpy(node->node_name, node_name);
+	//strcpy(node->node_name, node_name);
+	strncpy(node->node_name, node_name,MAX_NAME_SIZE);
+	node->node_name[MAX_NAME_SIZE] = '\0';
 	init_udp_socket(node);
 	insert_glnode(&graph->node_list, &node->glnode);
 	return node;
@@ -63,7 +69,8 @@ insert_link_between_two_nodes(node_t *node1,
 
 	int empty_intf_slot;
 
-	link_t *link = (link_t*) malloc(sizeof(link_t));
+//	link_t *link = (link_t*) malloc(sizeof(link_t)+1);
+	link_t *link = calloc(sizeof(link_t),1);
 
 	strcpy(link->intf1.if_name, from_if_name);
 	strcpy(link->intf2.if_name, to_if_name);
@@ -105,7 +112,7 @@ void dump_graph(graph_t *graph) {
 	traverse_glnode(&graph->node_list);
 }
 
-
+#if 0
 graph_t *build_graph_topo() {
 	graph_t *topo = create_new_graph("Generic Graph");
 	
@@ -130,5 +137,35 @@ graph_t *build_graph_topo() {
 	node_set_intf_ip_address(R2_re, "eth0/5", "40.1.1.2", 24);
 	
 	network_start_pkt_receiver_thread(topo);
-	return topo;
+	//return topo;
 }
+#endif
+
+#if 0
+
+graph_t *
+build_linear_topo(){
+
+    graph_t *topo = create_new_graph("Linear Topo");
+    node_t *H1 = create_graph_node(topo, "H1");
+    node_t *H2 = create_graph_node(topo, "H2");
+    node_t *H3 = create_graph_node(topo, "H3");
+
+    insert_link_between_two_nodes(H1, H2, "eth0/1", "eth0/2", 1);
+    insert_link_between_two_nodes(H2, H3, "eth0/3", "eth0/4", 1);
+
+    node_set_loopback_address(H1, "122.1.1.1");
+    node_set_loopback_address(H2, "122.1.1.2");
+    node_set_loopback_address(H3, "122.1.1.3");
+
+    node_set_intf_ip_address(H1, "eth0/1", "10.1.1.1", 24);
+    node_set_intf_ip_address(H2, "eth0/2", "10.1.1.2", 24);
+    node_set_intf_ip_address(H2, "eth0/3", "20.1.1.2", 24);
+    node_set_intf_ip_address(H3, "eth0/4", "20.1.1.1", 24);
+
+    network_start_pkt_receiver_thread(topo);
+    printf("%s graph = %s topo = %x",__func__,topo->topology_name,topo);
+    dump_nw_graph(topo);
+    return topo;
+}
+#endif
