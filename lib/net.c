@@ -55,7 +55,7 @@ bool_t node_set_intf_ip_address(node_t *node, char *local_if, char *ip_addr, cha
 //	strcpy(IF_IP(interface),ip_addr);
 	strncpy(IF_IP(interface),ip_addr,sizeof(ip_add_t)+1);
 	IF_IP(interface)[sizeof(ip_add_t)] = '\0';
-	interface->intf_nw_prop.mask = TRUE;
+	interface->intf_nw_prop.mask = mask;
 	interface->intf_nw_prop.is_ipadd_config = TRUE;
 	return TRUE;
 }
@@ -102,16 +102,51 @@ void dump_intf_props(interface_t *interface){
     */
 }
 
+
+/*Returns the local interface of the node which is configured
+ * with subnet in which 'ip_addr' lies
+ * */
+interface_t *
+node_get_matching_subnet_interface(node_t *node, char *ip_addr){
+
+    unsigned int i = 0;
+    interface_t *intf;
+
+    char *intf_addr = NULL;
+    char mask;
+    char intf_subnet[16];
+    char subnet2[16];
+
+    for(i = 0 ; i < MAX_INTF_PER_NODE; i++){
+
+        intf = node->intf[i];
+
+        if(!intf) break;
+    
+        if(intf->intf_nw_prop.is_ipadd_config == FALSE)
+            continue;
+
+        intf_addr = IF_IP(intf);
+        mask = intf->intf_nw_prop.mask;
+
+        memset(intf_subnet, 0 , 16);
+        memset(subnet2, 0 , 16);
+        apply_mask(intf_addr, mask, intf_subnet);
+        apply_mask(ip_addr, mask, subnet2);
+        if(strncmp(intf_subnet, subnet2, 16) == 0){
+            return intf;
+        }
+    }
+}
+
+
 void dump_nw_graph(graph_t *graph){
-    printf("\n%s %d\n",__func__,__LINE__);
     node_t *node;
     interface_t *interface;
     glthread_t *curr;
     unsigned int i;
-    printf("\n%s %d graph = %x\n",__func__,__LINE__,graph);
 
     printf("Topology Name = %s\n", graph->topology_name);
-    printf("\n%s %d\n",__func__,__LINE__);
     ITERATE_GLTHREAD_BEGIN(&graph->node_list, curr){
 	node = return_glnode_pointer(curr);
 	dump_node_nw_props(node);
@@ -123,4 +158,36 @@ void dump_nw_graph(graph_t *graph){
     } ITERATE_GLTHREAD_END(&graph->node_list, curr)
 
     //traverse_glnode(&graph->node_list);
+}
+
+
+
+/*When pkt moves from top to down in TCP/IP stack, we would need
+  room in the pkt buffer to attach more new headers. Below function
+  simply shifts the pkt content present in the start of the pkt buffer
+  towards right so that new room is created*/
+char *
+pkt_buffer_shift_right(char *pkt, unsigned int pkt_size,
+                       unsigned int total_buffer_size){
+	
+    char *temp = NULL;
+    bool_t need_temp_memory = FALSE;
+
+    if(pkt_size * 2 > total_buffer_size){
+        need_temp_memory = TRUE;
+    }
+    
+    if(need_temp_memory){
+        temp = calloc(1, pkt_size);
+        memcpy(temp, pkt, pkt_size);
+        memset(pkt, 0, total_buffer_size);
+        memcpy(pkt + (total_buffer_size - pkt_size), temp, pkt_size);
+        free(temp);
+        return pkt + (total_buffer_size - pkt_size);
+    }
+    
+    memcpy(pkt + (total_buffer_size - pkt_size), pkt, pkt_size);
+    memset(pkt, 0, pkt_size);
+    return pkt + (total_buffer_size - pkt_size);
+
 }

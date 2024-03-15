@@ -25,8 +25,9 @@ typedef struct glthread_ {
 void insert_glnode(glthread_t *, glthread_t *);
 void traverse_glnode(glthread_t **);
 void init_glthread(glthread_t *);
+void remove_glthread(glthread_t *);
 node_t *return_glnode_pointer(glthread_t *);
 #define offset(name_struct,field_name) \
 	(unsigned int )&((name_struct *)0)->field_name
 
-#endif /*DLL_H*/
+#endif /*GLTHREAD_H*/

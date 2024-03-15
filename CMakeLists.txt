@@ -18,6 +18,7 @@ set(LIB_CLI cli)
 set(DLL_LIB_NAME glthread)
 set(SUB_DIR_LIB ut_parser)
 set(GLUE_DIR_LIB gluethread)
+set(LAYER2_LIB_NAME layer2)
 set(EXECUTABLE tcpip_appl)
 
 
@@ -37,7 +38,7 @@ include(Docs)
 
 option(ENABLE_WARNINGS "Whether to Enable Warnings" ON)
 option(ENABLE_WARNINGS_AS_ERRORS "Whether to Enable Warnings as errors" OFF)
-
+option(ENABLE_SANITIZE_ADDR "Enable Address Sanitizer .. " ON)
 option(ENABLE_DEBUG_FLAGS "Whether to Enable Warnings" ON)
 
 if(ENABLE_WARNINGS)
@@ -45,6 +46,11 @@ if(ENABLE_WARNINGS)
 	message(STATUS "Included Warnings")
 endif()
 
+if(ENABLE_SANITIZE_ADDR)
+        include(Sanitizer)
+        add_sanitizer_flags()
+	message(STATUS "Included Address Sanitizer Flag")
+endif()
 
 if(ENABLE_CROSS_COMPILER)
 	include(arm32-cross-toolchain)
@@ -61,5 +67,6 @@ endif()
 add_subdirectory(lib)
 add_subdirectory(CommandParser1)
 add_subdirectory(app)
+add_subdirectory(Layer2)
 
 

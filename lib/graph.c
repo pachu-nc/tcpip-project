@@ -23,7 +23,7 @@ extern void network_start_pkt_receiver_thread(graph_t *topo);
 
 graph_t *
 create_new_graph(char *topology_name) {
-	graph_t *graph = calloc(sizeof(graph_t),1);
+	graph_t *graph = calloc(1,sizeof(graph_t));
 //	graph_t *graph = (graph_t *) malloc(sizeof(graph_t)+1);
 	//strcpy(graph->topology_name,topology_name);
 	strncpy(graph->topology_name,topology_name,MAX_TOPOLOGY_NAME);
@@ -55,6 +55,7 @@ create_graph_node(graph_t *graph, char *node_name){
 	//strcpy(node->node_name, node_name);
 	strncpy(node->node_name, node_name,MAX_NAME_SIZE);
 	node->node_name[MAX_NAME_SIZE] = '\0';
+	init_node_nw_prop(&node->node_nw_prop);
 	init_udp_socket(node);
 	insert_glnode(&graph->node_list, &node->glnode);
 	return node;
@@ -70,7 +71,7 @@ insert_link_between_two_nodes(node_t *node1,
 	int empty_intf_slot;
 
 //	link_t *link = (link_t*) malloc(sizeof(link_t)+1);
-	link_t *link = calloc(sizeof(link_t),1);
+	link_t *link = calloc(1,sizeof(link_t));
 
 	strcpy(link->intf1.if_name, from_if_name);
 	strcpy(link->intf2.if_name, to_if_name);

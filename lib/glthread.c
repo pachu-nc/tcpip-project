@@ -56,6 +56,33 @@ void insert_glnode(glthread_t *base_node, glthread_t *glnode){
         temp->prev = glnode;
 }
 
+
+void remove_glnode(glthread_t *curr){
+
+        /*The first node*/
+        if(!curr->prev) {
+                if(curr->next){
+                   curr->next->prev = NULL;
+                   curr->next = 0;
+                   return;
+                }
+                return;
+        }
+
+        /*Last node*/
+        if(!curr->next){
+                curr->prev->next = NULL;
+                curr->prev = NULL;
+                return;
+        }
+
+        curr->prev->next = curr->next;
+        curr->next->prev = curr->prev;
+        curr->next = 0;
+        curr->prev = 0;
+}
+
+
 node_t * return_glnode_pointer (glthread_t *curr ){
 	/*returns the pointer to the starting address of the node*/
         return  (node_t *)( (char *)curr - (char *)offset(node_t,glnode));
