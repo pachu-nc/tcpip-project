@@ -61,13 +61,25 @@ static int _send_pkt_out(int sock_fd, char* pkt_data, unsigned int pkt_size,
 	return rc;
 
 }
+extern void 
+layer2_frame_recv(node_t *node, interface_t *interface, 
+		char *pkt, unsigned int pkt_size);
+
 int pkt_receive(node_t *node, interface_t *interface, 
-		char *pkt, unsigned int size){
+		char *pkt, unsigned int pkt_size){
 	/*This function is entry point of data into the data link layer 
 	 * from the physical layer. Ingress journey of the packet 
 	 * starts from here in the TCP/IP stack.*/
+	
+	/*Make room in the packet buffer by shifting the data towards 
+	 * right, so that the tcp/ip stack can append more headers to 
+	 * the packet as required*/
+	
+	pkt = pkt_buffer_shift_right(pkt, pkt_size, MAX_PACKET_BUFFER_SIZE - MAX_NAME_SIZE);
+	
+	/*Do further processing of the packet*/
+	layer2_frame_recv(node, interface, pkt, pkt_size);
 
-	printf("msg received = %s, on node = %s IIF =%s\n", pkt, node->node_name, interface->if_name);
 
 	return 0;
 }
@@ -82,6 +94,7 @@ static void _pkt_receive(node_t *receiving_node,
 				recv_intf->if_name, receiving_node->node_name);
 		return;
 	}
+	
 	pkt_receive(receiving_node, recv_intf, pkt_with_aux_data+ MAX_NAME_SIZE,
 			pkt_size - MAX_NAME_SIZE);
 }
@@ -94,8 +107,15 @@ send_pkt_out(char *pkt, unsigned int pkt_size,
 	int rc; 
 	node_t *sending_node = interface->att_node;
 	node_t *nbr_node = get_nbr_node(interface);
+	
 	if(!nbr_node)
 		return -1;
+	
+	if(pkt_size + MAX_NAME_SIZE > MAX_PACKET_BUFFER_SIZE){
+        printf("Error : Node :%s, Pkt Size exceeded\n", sending_node->node_name);
+        return -1;
+    	}
+
 	unsigned int dst_udp_port_num = nbr_node->udp_port_number;
 
 	/*Sending node from one node to the other using UDP socket*/	
@@ -116,13 +136,13 @@ send_pkt_out(char *pkt, unsigned int pkt_size,
 	
 	/*Copy the name of the interface in the send buffer*/
 	strncpy(pkt_with_aux_data, other_interface->if_name, MAX_NAME_SIZE);
-	pkt_with_aux_data[MAX_NAME_SIZE] = '\0';
+	pkt_with_aux_data[MAX_NAME_SIZE -1 ] = '\0';
 
 	/*Copy the actual data in the send buffer*/
 	memcpy(pkt_with_aux_data + MAX_NAME_SIZE , pkt, pkt_size);
 	
 	/*Send the data out*/
-
+	
 	rc = _send_pkt_out(sock, pkt_with_aux_data, pkt_size + MAX_NAME_SIZE, 
 				dst_udp_port_num);
 	close(sock);
@@ -163,16 +183,24 @@ _network_start_receiver_thread( void * arg){
 	} ITERATE_GLTHREAD_END(&topo->node_list, curr)
 
 	while(1) {
+
+		/*Copy all the udp_sock_fd from backup to active*/
 		memcpy(&active_sock_fd_set, &backup_sock_fd_set, sizeof(fd_set));
 		
-		/*select has max socketfd +1, select system call is a blocking system call. i.e. as long active_sock_fd_set is 		activated the select systems call remains blocked. */
+		/*select has max socketfd +1, select system call is a blocking system call. 
+		 * i.e. as long active_sock_fd_set is activated the select systems call 
+		 * remains blocked. */
 		select(sock_max_fd +1, &active_sock_fd_set, NULL, NULL, NULL);
 		
+		/*These lines below select is called or invoked only if there is change in
+		 * the fd that the select call is monitoring.*/	
+
 		/*Check if the data has arrived on any node by traversing the node.*/
 		ITERATE_GLTHREAD_BEGIN(&topo->node_list, curr){
 			node = return_glnode_pointer(curr);
 			
 			if(FD_ISSET(node->udp_sock_fd, &active_sock_fd_set)){
+
 				memset(recv_buffer, 0, MAX_PACKET_BUFFER_SIZE);
 				bytes_recvd = recvfrom(node->udp_sock_fd, (char *)recv_buffer, 
 							MAX_PACKET_BUFFER_SIZE, 0,
