@@ -76,7 +76,6 @@ int pkt_receive(node_t *node, interface_t *interface,
 	 * the packet as required*/
 	
 	pkt = pkt_buffer_shift_right(pkt, pkt_size, MAX_PACKET_BUFFER_SIZE - MAX_NAME_SIZE);
-	
 	/*Do further processing of the packet*/
 	layer2_frame_recv(node, interface, pkt, pkt_size);
 
@@ -88,7 +87,7 @@ static void _pkt_receive(node_t *receiving_node,
 				unsigned int pkt_size){
 	char *recv_intf_name = pkt_with_aux_data;
 	interface_t *recv_intf = get_node_if_by_name(receiving_node, recv_intf_name);
-	
+		
 	if(!recv_intf){
 		printf("\nError: Packet received on unknown interface %s on node %s\n",
 				recv_intf->if_name, receiving_node->node_name);

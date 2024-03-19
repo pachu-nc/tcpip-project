@@ -54,7 +54,7 @@ create_graph_node(graph_t *graph, char *node_name){
 	node_t *node = calloc(1, sizeof(node_t));
 	//strcpy(node->node_name, node_name);
 	strncpy(node->node_name, node_name,MAX_NAME_SIZE);
-	node->node_name[MAX_NAME_SIZE] = '\0';
+	node->node_name[MAX_NAME_SIZE-1] = '\0';
 	init_node_nw_prop(&node->node_nw_prop);
 	init_udp_socket(node);
 	insert_glnode(&graph->node_list, &node->glnode);

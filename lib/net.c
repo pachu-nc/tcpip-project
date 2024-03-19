@@ -53,8 +53,8 @@ bool_t node_set_intf_ip_address(node_t *node, char *local_if, char *ip_addr, cha
 	if(!interface) assert(0);
 
 //	strcpy(IF_IP(interface),ip_addr);
-	strncpy(IF_IP(interface),ip_addr,sizeof(ip_add_t)+1);
-	IF_IP(interface)[sizeof(ip_add_t)] = '\0';
+	strncpy(IF_IP(interface),ip_addr,16);
+	IF_IP(interface)[15] = '\0';
 	interface->intf_nw_prop.mask = mask;
 	interface->intf_nw_prop.is_ipadd_config = TRUE;
 	return TRUE;
@@ -87,19 +87,19 @@ void dump_intf_props(interface_t *interface){
                 IF_MAC(interface)[2], IF_MAC(interface)[3],
                 IF_MAC(interface)[4], IF_MAC(interface)[5]);
     }
-    /*
+    
     else{
          printf("\t l2 mode = %s", intf_l2_mode_str(IF_L2_MODE(interface)));
          printf("\t vlan membership : ");
          int i = 0;
          for(; i < MAX_VLAN_MEMBERSHIP; i++){
-            if(interface->intf_nw_props.vlans[i]){
-                printf("%u  ", interface->intf_nw_props.vlans[i]);
+            if(interface->intf_nw_prop.vlans[i]){
+                printf("%u  ", interface->intf_nw_prop.vlans[i]);
             }
          }
          printf("\n");
     }
-    */
+   
 }
 
 
