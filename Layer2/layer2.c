@@ -17,6 +17,40 @@ arp_entry_t *arp_glue_to_arp_entry(glthread_t *curr ){
         return  (node_t *)( (char *)curr - (char *)offset(arp_entry_t,arp_glue));
 }
 
+
+static void
+promote_pkt_to_layer2(node_t *node, interface_t *iif,
+        ethernet_hdr_t *ethernet_hdr,
+        uint32_t pkt_size){
+
+    switch(ethernet_hdr->type){
+        case ARP_MSG:
+            {
+                /*Can be ARP Broadcast or ARP reply*/
+                arp_hdr_t *arp_hdr = (arp_hdr_t *)(GET_ETHERNET_HDR_PAYLOAD(ethernet_hdr));
+                switch(arp_hdr->op_code){
+                    case ARP_BROAD_REQ:
+                        process_arp_broadcast_request(node, iif, ethernet_hdr);
+                        break;
+                    case ARP_REPLY:
+                        process_arp_reply_msg(node, iif, ethernet_hdr);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            break;
+        case ETH_IP:
+            //promote_pkt_to_layer3(node, iif,
+              //      GET_ETHERNET_HDR_PAYLOAD(ethernet_hdr),
+                //    pkt_size - GET_ETH_HDR_SIZE_EXCL_PAYLOAD(ethernet_hdr),
+                  //  ethernet_hdr->type);
+            break;
+        default:
+            ;
+    }
+}
+
 void
 layer2_frame_recv(node_t *node, interface_t *interface, 
 		char *pkt, unsigned int pkt_size){
@@ -27,7 +61,7 @@ layer2_frame_recv(node_t *node, interface_t *interface,
     ethernet_hdr_t *ethernet_hdr = (ethernet_hdr_t *)pkt;
 
     if(l2_frame_recv_qualify_on_interface(interface,
-                                          ethernet_hdr) == FALSE){
+                                          ethernet_hdr, &vlan_id_to_tag) == FALSE){
 
         printf("L2 Frame Rejected on node %s\n", node->node_name);
         return;
@@ -35,30 +69,8 @@ layer2_frame_recv(node_t *node, interface_t *interface,
 
     printf("L2 Frame Accepted on node %s \n", node->node_name);
 	
-    switch(ethernet_hdr->type){
-	    case ARP_MSG: 
-		    {
-			    arp_hdr_t *arp_hdr = (arp_hdr_t *) (ethernet_hdr->payload);
-			    switch(arp_hdr->op_code){
-				    case ARP_BROAD_REQ: 
-					    process_arp_broadcast_request(node, interface, ethernet_hdr);
-				    	    break;
-	     			     case ARP_REPLY:
-				    	    process_arp_reply_msg(node, interface, ethernet_hdr);
-	     				    break;
-	    			    default:
-	    				break;
-			    }
-		    }
-		    break;
-	    default:
-		    printf("\nNot an ARP Message\n");
-		    break;
-    }
-#if 0
     /*Handle Reception of a L2 Frame on L3 Interface*/
     if(IS_INTF_L3_MODE(interface)){
-
        promote_pkt_to_layer2(node, interface, ethernet_hdr, pkt_size);
     }
     else if(IF_L2_MODE(interface) == ACCESS ||
@@ -76,7 +88,6 @@ layer2_frame_recv(node_t *node, interface_t *interface,
     }
     else
         return; /*Do nothing, drop the packet*/
-#endif
 }
 
 void 
@@ -155,6 +166,152 @@ arp_table_entry_add(arp_table_t *arp_table, arp_entry_t *arp_entry){
 	return TRUE;
 }
 
+/*Interface config APIs for L2 mode configuration*/
+
+void
+interface_set_l2_mode(node_t *node,
+                      interface_t *interface,
+                      char *l2_mode_option){
+
+    intf_l2_mode_t intf_l2_mode;
+
+    if(strncmp(l2_mode_option, "access", strlen("access")) == 0){
+        intf_l2_mode = ACCESS;
+    }
+    else if(strncmp(l2_mode_option, "trunk", strlen("trunk")) ==0){
+        intf_l2_mode = TRUNK;
+    }
+    else{
+        assert(0);
+    }
+
+#if 1
+    /*Case 1 : if interface is working in L3 mode, i.e. IP address is configured.
+     * then disable ip address, and set interface in L2 mode*/
+    if(IS_INTF_L3_MODE(interface)){
+        interface->intf_nw_prop.is_ipadd_config_backup = TRUE;
+        interface->intf_nw_prop.is_ipadd_config = FALSE;
+
+        IF_L2_MODE(interface) = intf_l2_mode;
+        return;
+    }
+#endif
+    
+    /*Case 2 : if interface is working neither in L2 mode or L3 mode, then
+     * apply L2 config*/
+    if(IF_L2_MODE(interface) == L2_MODE_UNKNOWN){
+        IF_L2_MODE(interface) = intf_l2_mode;
+        return;
+    }
+
+    /*case 3 : if interface is operating in same mode, and user config same mode
+     * again, then do nothing*/
+    if(IF_L2_MODE(interface) == intf_l2_mode){
+        return;
+    }
+
+    /*case 4 : if interface is operating in access mode, and user config trunk mode,
+     * then overwrite*/
+    if(IF_L2_MODE(interface) == ACCESS &&
+            intf_l2_mode == TRUNK){
+        IF_L2_MODE(interface) = intf_l2_mode;
+        return;
+    }
+
+    /* case 5 : if interface is operating in trunk mode, and user config access mode,
+     * then overwrite, remove all vlans from interface, user must enable vlan again
+     * on interface*/
+    if(IF_L2_MODE(interface) == TRUNK &&
+           intf_l2_mode == ACCESS){
+
+        IF_L2_MODE(interface) = intf_l2_mode;
+
+        unsigned int i = 0;
+	
+	for ( ; i < MAX_VLAN_MEMBERSHIP; i++){
+            interface->intf_nw_prop.vlans[i] = 0;
+        }
+    }
+}
+
+
+/*APIs to be used to create topologies*/
+void
+node_set_intf_l2_mode(node_t *node, char *intf_name,
+                        intf_l2_mode_t intf_l2_mode){
+
+    interface_t *interface = get_node_if_by_name(node, intf_name);
+    assert(interface);
+
+    interface_set_l2_mode(node, interface, intf_l2_mode_str(intf_l2_mode));
+}
+
+
+void
+interface_set_vlan(node_t *node,
+                   interface_t *interface,
+                   unsigned int vlan_id){
+
+    /* Case 1 : Cant set vlans on interface configured with ip
+     * address*/
+    if(IS_INTF_L3_MODE(interface)){
+        printf("Error : Interface %s : L3 mode enabled\n", interface->if_name);
+        return;
+    }
+
+    /*Case 2 : Cant set vlan on interface not operating in L2 mode*/
+    if(IF_L2_MODE(interface) != ACCESS &&
+        IF_L2_MODE(interface) != TRUNK){
+        printf("Error : Interface %s : L2 mode not Enabled\n", interface->if_name);
+        return;
+    }
+
+    /*case 3 : Can set only one vlan on interface operating in ACCESS mode*/
+    if(interface->intf_nw_prop.intf_l2_mode == ACCESS){
+
+        unsigned int i = 0, *vlan = NULL;
+        for( ; i < MAX_VLAN_MEMBERSHIP; i++){
+            if(interface->intf_nw_prop.vlans[i]){
+                vlan = &interface->intf_nw_prop.vlans[i];
+            }
+        }
+        if(vlan){
+            *vlan = vlan_id;
+            return;
+        }
+        interface->intf_nw_prop.vlans[0] = vlan_id;
+    }
+    /*case 4 : Add vlan membership on interface operating in TRUNK mode*/
+    if(interface->intf_nw_prop.intf_l2_mode == TRUNK){
+
+        unsigned int i = 0, *vlan = NULL;
+
+        for( ; i < MAX_VLAN_MEMBERSHIP; i++){
+
+            if(!vlan && interface->intf_nw_prop.vlans[i] == 0){
+                vlan = &interface->intf_nw_prop.vlans[i];
+            }
+            else if(interface->intf_nw_prop.vlans[i] == vlan_id){
+                return;
+            }
+        }
+        if(vlan){
+            *vlan = vlan_id;
+            return;
+        }
+        printf("Error : Interface %s : Max Vlan membership limit reached", interface->if_name);
+    }
+}
+
+void
+node_set_intf_vlan_membsership(node_t *node, char *intf_name,
+                                unsigned int vlan_id){
+
+    interface_t *interface = get_node_if_by_name(node, intf_name);
+    assert(interface);
+
+    interface_set_vlan(node, interface, vlan_id);
+}
 
 void
 dump_arp_table(arp_table_t *arp_table){
@@ -279,10 +436,8 @@ process_arp_broadcast_request(node_t *node,
 
     inet_ntop(AF_INET, &arp_dst_ip, ip_addr, 16);
     ip_addr[15] = '\0';
-
     if(strncmp(IF_IP(iif), ip_addr, 16)){
-
-        printf("%s : ARP Broadcast req msg dropped, Dst IP address %s did not match with interface ip : %s\n",
+  	printf("%s : ARP Broadcast req msg dropped, Dst IP address %s did not match with interface ip : %s\n",
                 node->node_name, ip_addr , IF_IP(iif));
         return;
     }
@@ -343,6 +498,113 @@ send_arp_broadcast_request(node_t *node,
     SET_COMMON_ETH_FCS(ethernet_hdr, sizeof(arp_hdr_t), 0); /*Not used*/
     /*STEP 3 : Now dispatch the ARP Broadcast Request Packet out of interface*/
     send_pkt_out((char *)ethernet_hdr, ETH_HDR_SIZE_EXCL_PAYLOAD + payload_size,oif);
+    
     free(ethernet_hdr);
 }
+/*Vlan Management Routines*/
+
+/* Return new packet size if pkt is tagged with new vlan id*/
+
+ethernet_hdr_t *
+tag_pkt_with_vlan_id(ethernet_hdr_t *ethernet_hdr,
+                     unsigned int total_pkt_size,
+                     int vlan_id,
+                     unsigned int *new_pkt_size){
+
+    unsigned int payload_size  = 0 ;
+    *new_pkt_size = 0;
+
+    /*If the pkt is already tagged, replace it*/
+    vlan_8021q_hdr_t *vlan_8021q_hdr =
+        is_pkt_vlan_tagged(ethernet_hdr);
+
+
+    if(vlan_8021q_hdr){
+        payload_size = total_pkt_size - VLAN_ETH_HDR_SIZE_EXCL_PAYLOAD;
+        vlan_8021q_hdr->tci_vid = (short)vlan_id;
+
+        /*Update checksum, however not used*/
+        SET_COMMON_ETH_FCS(ethernet_hdr, payload_size, 0);
+
+        *new_pkt_size = total_pkt_size;
+        return ethernet_hdr;
+    }
+
+    /*If the pkt is not already tagged, tag it*/
+    /*Fix me : Avoid declaring local variables of type
+     ethernet_hdr_t or vlan_ethernet_hdr_t as the size of these
+     variables are too large and is not healthy for program stack
+     memory*/
+    ethernet_hdr_t ethernet_hdr_old;
+    memcpy((char *)&ethernet_hdr_old, (char *)ethernet_hdr,
+                ETH_HDR_SIZE_EXCL_PAYLOAD - sizeof(ethernet_hdr_old.FCS));
+
+    payload_size = total_pkt_size - ETH_HDR_SIZE_EXCL_PAYLOAD;
+    vlan_ethernet_hdr_t *vlan_ethernet_hdr =
+            (vlan_ethernet_hdr_t *)((char *)ethernet_hdr - sizeof(vlan_8021q_hdr_t));
+
+    memset((char *)vlan_ethernet_hdr, 0,
+                VLAN_ETH_HDR_SIZE_EXCL_PAYLOAD - sizeof(vlan_ethernet_hdr->FCS));
+    memcpy(vlan_ethernet_hdr->dst_mac.mac, ethernet_hdr_old.dst_mac.mac, sizeof(mac_add_t));
+    memcpy(vlan_ethernet_hdr->src_mac.mac, ethernet_hdr_old.src_mac.mac, sizeof(mac_add_t));
+
+    /*Come to 802.1Q vlan hdr*/
+    vlan_ethernet_hdr->vlan_8021q_hdr.tpid = VLAN_8021Q_PROTO;
+    vlan_ethernet_hdr->vlan_8021q_hdr.tci_pcp = 0;
+    vlan_ethernet_hdr->vlan_8021q_hdr.tci_dei = 0;
+    vlan_ethernet_hdr->vlan_8021q_hdr.tci_vid = (short)vlan_id;
+
+    /*Type field*/
+    vlan_ethernet_hdr->type = ethernet_hdr_old.type;
+    /*No need to copy data*/
+
+    /*Update checksum, however not used*/
+    SET_COMMON_ETH_FCS((ethernet_hdr_t *)vlan_ethernet_hdr, payload_size, 0 );
+    *new_pkt_size = total_pkt_size  + sizeof(vlan_8021q_hdr_t);
+    return (ethernet_hdr_t *)vlan_ethernet_hdr;
+}
+
+/* Return new packet size if pkt is untagged with the existing
+ * vlan 801.1q hdr*/
+ethernet_hdr_t *
+untag_pkt_with_vlan_id(ethernet_hdr_t *ethernet_hdr,
+                     unsigned int total_pkt_size,
+                     unsigned int *new_pkt_size){
+
+    *new_pkt_size = 0;
+
+    vlan_8021q_hdr_t *vlan_8021q_hdr =
+        is_pkt_vlan_tagged(ethernet_hdr);
+
+    /*NOt tagged already, do nothing*/
+    if(!vlan_8021q_hdr){
+        *new_pkt_size = total_pkt_size;
+        return ethernet_hdr;
+    }
+
+    /*Fix me : Avoid declaring local variables of type
+     ethernet_hdr_t or vlan_ethernet_hdr_t as the size of these
+     variables are too large and is not healthy for program stack
+     memory*/
+    vlan_ethernet_hdr_t vlan_ethernet_hdr_old;
+    memcpy((char *)&vlan_ethernet_hdr_old, (char *)ethernet_hdr,
+                VLAN_ETH_HDR_SIZE_EXCL_PAYLOAD - sizeof(vlan_ethernet_hdr_old.FCS));
+
+    ethernet_hdr = (ethernet_hdr_t *)((char *)ethernet_hdr + sizeof(vlan_8021q_hdr_t));
+
+    memcpy(ethernet_hdr->dst_mac.mac, vlan_ethernet_hdr_old.dst_mac.mac, sizeof(mac_add_t));
+    memcpy(ethernet_hdr->src_mac.mac, vlan_ethernet_hdr_old.src_mac.mac, sizeof(mac_add_t));
+
+    ethernet_hdr->type = vlan_ethernet_hdr_old.type;
+
+    /*No need to copy data*/
+    unsigned int payload_size = total_pkt_size - VLAN_ETH_HDR_SIZE_EXCL_PAYLOAD;
+
+    /*Update checksum, however not used*/
+    SET_COMMON_ETH_FCS(ethernet_hdr, payload_size, 0);
+
+    *new_pkt_size = total_pkt_size - sizeof(vlan_8021q_hdr_t);
+    return ethernet_hdr;
+}
+
 

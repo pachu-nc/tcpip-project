@@ -2,7 +2,8 @@
 # Create a Static Library named Library with the Source files as my_lib.c
 
 set(LAYER2_LIB_SRC
-	"layer2.c")
+	"layer2.c"
+	"l2switch.c")
 
 
 add_library(${LAYER2_LIB_NAME} STATIC ${LAYER2_LIB_SRC})
