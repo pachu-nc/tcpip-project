@@ -44,6 +44,9 @@ bool_t node_set_loopback_address(node_t *node, char *ip_addr) {
 	strcpy(NODE_LO_ADDR(node),ip_addr);
 	strncpy(NODE_LO_ADDR(node), ip_addr, 16);
 	NODE_LO_ADDR(node)[15] = '\0';
+	/*Add it as direct route in routing table*/
+    	rt_table_add_direct_route(NODE_RT_TABLE(node), ip_addr, 32);     
+
 	return TRUE;
 }
 bool_t node_set_intf_ip_address(node_t *node, char *local_if, char *ip_addr, char mask) {
@@ -57,6 +60,7 @@ bool_t node_set_intf_ip_address(node_t *node, char *local_if, char *ip_addr, cha
 	IF_IP(interface)[15] = '\0';
 	interface->intf_nw_prop.mask = mask;
 	interface->intf_nw_prop.is_ipadd_config = TRUE;
+    	rt_table_add_direct_route(NODE_RT_TABLE(node), ip_addr, mask);
 	return TRUE;
 }
 

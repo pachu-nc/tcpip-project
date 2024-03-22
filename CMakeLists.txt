@@ -19,6 +19,8 @@ set(DLL_LIB_NAME glthread)
 set(SUB_DIR_LIB ut_parser)
 set(GLUE_DIR_LIB gluethread)
 set(LAYER2_LIB_NAME layer2)
+set(LAYER3_LIB_NAME layer3)
+set(LAYER5_LIB_NAME ping)
 set(EXECUTABLE tcpip_appl)
 
 
@@ -68,5 +70,5 @@ add_subdirectory(lib)
 add_subdirectory(CommandParser1)
 add_subdirectory(app)
 add_subdirectory(Layer2)
-
-
+add_subdirectory(Layer3)
+add_subdirectory(Layer5)

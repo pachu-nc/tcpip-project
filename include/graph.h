@@ -83,6 +83,7 @@ graph_t *build_graph_topo(void);
 graph_t *build_linear_topo(void);
 graph_t *build_simple_l2_switch_topo(void);
 graph_t *build_dualswitch_topo(void);
+graph_t *linear_3_node_topo(void);
 
 
 node_t  *create_graph_node(graph_t *, char*);

@@ -155,7 +155,8 @@ int main() {
 	//topo = build_graph_topo();
 	//topo = build_linear_topo();
 //	topo = build_simple_l2_switch_topo();
-	topo =	build_dualswitch_topo();
+//	topo =	build_dualswitch_topo();
+	topo =	linear_3_node_topo();
 //	printf("Topology = %x\n", topo);
 #if 0
 	/*Sleep for sometime*/

@@ -12,7 +12,7 @@ target_include_directories(${EXECUTABLE} PUBLIC "../include")
 #link the Lib named Library with the executable hello_world making it publioc
 # Executable hello_world depends on Library
 
-target_link_libraries(${EXECUTABLE} PRIVATE ${GRAPH_LIB_NAME} ${LAYER2_LIB_NAME} ${DLL_LIB_NAME} ${LIB_CLI} ${SUB_DIR_LIB})
+target_link_libraries(${EXECUTABLE} PRIVATE ${GRAPH_LIB_NAME} ${LAYER2_LIB_NAME} ${LAYER3_LIB_NAME} ${LAYER5_LIB_NAME} ${DLL_LIB_NAME} ${LIB_CLI} ${SUB_DIR_LIB})
 #target_link_libraries(${EXECUTABLE} PRIVATE ${GRAPH_LIB_NAME} ${LIB_CLI} ${SUB_DIR_LIB} ${GLUE_DIR_LIB} )
 
 #Enable Warnings

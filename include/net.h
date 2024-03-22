@@ -9,6 +9,7 @@ typedef struct graph_ graph_t;
 typedef struct interface_ interface_t;
 typedef struct arp_table_ arp_table_t;
 typedef struct mac_table_ mac_table_t;
+typedef struct rt_table_ rt_table_t;
 
 
 typedef struct ip_add_ {
@@ -51,13 +52,14 @@ typedef struct node_nw_prop_{
 	mac_table_t *mac_table;
 
 	/*L3 Properties*/
+	rt_table_t *rt_table;
 	bool_t is_lb_addr_config;
 	ip_add_t lb_addr; /*Loopback address of the node*/
 }node_nw_prop_t;	
 
 extern void init_arp_table(arp_table_t **arp_table);
 extern void init_mac_table(mac_table_t **mac_table);
-
+extern void init_rt_table(rt_table_t **rt_table);
 #define MAX_VLAN_MEMBERSHIP 10
 
 /*Should be Called only for interface operating in Access mode*/
@@ -90,7 +92,9 @@ init_node_nw_prop(node_nw_prop_t *node_nw_prop ){
 	init_arp_table(&(node_nw_prop->arp_table));
 	/*Init MAC table*/
 	init_mac_table(&(node_nw_prop->mac_table));
-       	
+       	/*Init Routing table*/
+	init_rt_table(&(node_nw_prop->rt_table));
+
 }
 
 typedef struct intf_nw_props_ {
@@ -134,6 +138,7 @@ init_intf_nw_prop(intf_nw_props_t *intf_nw_prop ){
 #define NODE_LO_ADDR(node_ptr)		(node_ptr->node_nw_prop.lb_addr.ip_add)
 #define NODE_ARP_TABLE(node_ptr)    	(node_ptr->node_nw_prop.arp_table)
 #define NODE_MAC_TABLE(node_ptr)    	(node_ptr->node_nw_prop.mac_table)
+#define NODE_RT_TABLE(node_ptr)     	(node_ptr->node_nw_prop.rt_table)
 #define IF_L2_MODE(intf_ptr)    	(intf_ptr->intf_nw_prop.intf_l2_mode)
 #define IS_INTF_L3_MODE(intf_ptr)   	(intf_ptr->intf_nw_prop.is_ipadd_config == TRUE)
 

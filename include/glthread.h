@@ -17,6 +17,9 @@ typedef struct node_ node_t;
 #define ITERATE_GLTHREAD_END(glthreadptrstart, glthreadptr)                                        \
         }}
 
+#define IS_GLTHREAD_LIST_EMPTY(glthreadptr)         \
+    ((glthreadptr)->next == 0 && (glthreadptr)->prev == 0)
+
 typedef struct glthread_ {
         struct glthread_ *next;
         struct glthread_ *prev;

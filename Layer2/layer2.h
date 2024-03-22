@@ -2,11 +2,13 @@
 #define __LAYER2_H__
 
 #include <net.h>
-#include <glthread.h>
+#include "glthread.h"
 #include "tcpconst.h"
 #include <stdlib.h>  /*for calloc*/
 #include "graph.h"
 #include "utils.h"
+
+typedef struct arp_pending_entry_ arp_pending_entry_t;
 
 /*ARP table is maintained as a linked list of ARP entries*/
 typedef struct arp_table_ {
@@ -25,6 +27,11 @@ typedef struct arp_entry {
 	mac_add_t mac_addr;
 	char oif_name[MAX_NAME_SIZE];
 	glthread_t arp_glue;
+
+	bool_t is_sane;
+	/*List of packets which are pending for 
+	 * ARP resolution*/
+	glthread_t arp_pending_list; /*Linked List Head*/
 }arp_entry_t;
 
 
@@ -45,7 +52,6 @@ typedef struct arp_hdr_{
 
 
 /*#pragma is included so that compiler doesn't include any padding in the structure. Since it is a standard header format*/
-#pragma pack (push,1)
 typedef struct ethernet_hdr_{
 	mac_add_t dst_mac;
 	mac_add_t src_mac;
@@ -115,6 +121,13 @@ is_pkt_vlan_tagged(ethernet_hdr_t *ethernet_hdr){
 #define ETH_FCS(eth_hdr_ptr, payload_size)  \
     (*(unsigned int *)(((char *)(((ethernet_hdr_t *)eth_hdr_ptr)->payload) + payload_size)))
 
+#define IS_ARP_ENTRIES_EQUAL(arp_entry_1, arp_entry_2)  \
+    (strncmp(arp_entry_1->ip_addr.ip_add, arp_entry_2->ip_addr.ip_add, 16) == 0 && \
+        strncmp(arp_entry_1->mac_addr.mac, arp_entry_2->mac_addr.mac, 6) == 0 && \
+        strncmp(arp_entry_1->oif_name, arp_entry_2->oif_name, MAX_NAME_SIZE) == 0 && \
+        arp_entry_1->is_sane == arp_entry_2->is_sane &&     \
+        arp_entry_1->is_sane == FALSE)
+
 #if 0
 static inline bool_t
 l2_framce_recv_qualify_on_interface(interface_t *interface,
@@ -149,6 +162,19 @@ SET_COMMON_ETH_FCS(ethernet_hdr_t *ethernet_hdr,
     else{
       ETH_FCS(ethernet_hdr, payload_size) = new_fcs;
     }
+}
+static inline ethernet_hdr_t *
+ALLOC_ETH_HDR_WITH_PAYLOAD(char *pkt, unsigned int pkt_size){
+
+    char *temp = calloc(1, pkt_size);
+    memcpy(temp, pkt, pkt_size);
+
+    ethernet_hdr_t *eth_hdr = (ethernet_hdr_t *)(pkt - ETH_HDR_SIZE_EXCL_PAYLOAD);
+    memset((char *)eth_hdr, 0, ETH_HDR_SIZE_EXCL_PAYLOAD);
+    memcpy(eth_hdr->payload, temp, pkt_size);
+    SET_COMMON_ETH_FCS(eth_hdr, pkt_size, 0);
+    free(temp);
+    return eth_hdr;
 }
 
 #if 1
@@ -292,7 +318,12 @@ void
 delete_arp_table_entry(arp_table_t *arp_table, char *ip_addr);
 
 bool_t
-arp_table_entry_add(arp_table_t *arp_table, arp_entry_t *arp_entry);
+arp_table_entry_add(arp_table_t *arp_table, arp_entry_t *arp_entry,
+                        glthread_t **arp_pending_list);
+#if 0
+bool_t
+arp_table_entry_add(arp_table_t *arp_table, arp_entry_t *arp_entry, );
+#endif
 
 void
 dump_arp_table(arp_table_t *arp_table);
@@ -313,7 +344,6 @@ arp_table_update_from_arp_reply(arp_table_t *arp_table,
 				arp_hdr_t *arp_hdr, interface_t *iif);
 
 
-#if 1
 
 /*APIs to be used to create topologies*/
 void
@@ -344,21 +374,14 @@ add_arp_pending_entry(arp_entry_t *arp_entry,
                         char *pkt,
                         unsigned int pkt_size);
 			
-
-
-#endif
-
 arp_entry_t *
 create_arp_sane_entry(arp_table_t *arp_table, char *ip_addr);
 
-#if 0
 static bool_t
 arp_entry_sane(arp_entry_t *arp_entry){
 
     return arp_entry->is_sane;
 }
-
-#endif
 
 ethernet_hdr_t *
 untag_pkt_with_vlan_id(ethernet_hdr_t *ethernet_hdr,
@@ -382,4 +405,16 @@ GET_ETH_HDR_SIZE_EXCL_PAYLOAD(ethernet_hdr_t *ethernet_hdr){
     }
 }
 
+
+void
+promote_pkt_to_layer2(node_t *node, interface_t *iif,
+        ethernet_hdr_t *ethernet_hdr,
+        uint32_t pkt_size);
+
+void
+demote_pkt_to_layer2(node_t *node, /*Currenot node*/
+        unsigned int next_hop_ip,  /*If pkt is forwarded to next router, then this is Nexthop IP address (gateway) provided by L3 layer. L2 need to resolve ARP for this IP address*/
+        char *outgoing_intf,       /*The oif obtained from L3 lookup if L3 has decided to forward the pkt. If NULL, then L2 will find the appropriate interface*/
+        char *pkt, unsigned int pkt_size,   /*Higher Layers payload*/
+        int protocol_number);
 #endif /*_LAYER2_H__*/
