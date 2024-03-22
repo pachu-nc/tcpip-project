@@ -233,6 +233,8 @@ layer3_ip_pkt_recv_from_bottom(node_t *node, interface_t *interface,
 	
 	ip_hdr_t *ip_hdr = pkt;
         char dest_ip_addr[16];
+        char *l4_hdr, *l5_hdr;
+
 	//printf("\nDest_ip = %x\n",ip_hdr->dst_ip);
 	unsigned int dst_ip = htonl(ip_hdr->dst_ip);
 	inet_ntop(AF_INET, &dst_ip, dest_ip_addr, 16);
@@ -262,6 +264,14 @@ layer3_ip_pkt_recv_from_bottom(node_t *node, interface_t *interface,
 				case ICMP_PRO:
 					printf("\nIP Address: %s, Ping Success\n", dest_ip_addr);
 					break;
+				case IP_IN_IP:
+                    			/*Packet has reached ERO, now set the packet onto its new
+                    			  Journey from ERO to final destination*/
+                    			layer3_ip_pkt_recv_from_bottom(node, interface,
+                    			        (ip_hdr_t *)INCREMENT_IPHDR(ip_hdr),
+                    			        IP_HDR_PAYLOAD_SIZE(ip_hdr));
+                    			return;
+
 				default:
 					;
 			}

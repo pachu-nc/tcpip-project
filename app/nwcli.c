@@ -222,7 +222,7 @@ ping_handler(param_t *param, ser_buff_t *tlv_buf, op_mode enable_or_disable){
             layer5_ping_fn(node, ip_addr);
             break;
         case CMDCODE_ERO_PING:
-            //layer3_ero_ping_fn(node, ip_addr, ero_ip_addr);
+            layer3_ero_ping_fn(node, ip_addr, ero_ip_addr);
         default:
             ;
     }

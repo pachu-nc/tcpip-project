@@ -97,6 +97,11 @@ l3_route_t*
 l3rib_lookup_lpm(rt_table_t *rt_table,
                  unsigned int dest_ip);
 
+#define IP_HDR_LEN_IN_BYTES(ip_hdr_ptr)  (ip_hdr_ptr->ihl * 4)
+#define IP_HDR_TOTAL_LEN_IN_BYTES(ip_hdr_ptr)   (ip_hdr_ptr->total_length * 4)
+#define INCREMENT_IPHDR(ip_hdr_ptr) ((char *)ip_hdr_ptr + (ip_hdr_ptr->ihl * 4))
+#define IP_HDR_PAYLOAD_SIZE(ip_hdr_ptr) (IP_HDR_TOTAL_LEN_IN_BYTES(ip_hdr_ptr) - \
+        IP_HDR_LEN_IN_BYTES(ip_hdr_ptr))
 
 
 #define IS_L3_ROUTES_EQUAL(rt1, rt2)              \
