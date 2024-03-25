@@ -91,7 +91,7 @@ insert_link_between_two_nodes(node_t *node1,
 	node2->intf[empty_intf_slot] = &link->intf2;
 
 	init_intf_nw_prop(&link->intf1.intf_nw_prop);
-    	init_intf_nw_prop(&link->intf2.intf_nw_prop);
+    init_intf_nw_prop(&link->intf2.intf_nw_prop);
     	
 	/*Now Assign Random generated Mac address to the Interfaces*/
     	interface_assign_mac_address(&link->intf1);
@@ -107,6 +107,9 @@ void dump_interface(interface_t *interface){
             nbr_node->node_name,
             interface->att_node->node_name,
             link->cost);
+
+	printf("Interface Status = %s\n\n",(IF_IS_UP(interface) ? "UP" : "DOWN"));
+
 }
 void dump_graph(graph_t *graph) {
 	printf("\n======== Topology Name = %s =========\n\n",graph->topology_name);

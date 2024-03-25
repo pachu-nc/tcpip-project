@@ -93,9 +93,16 @@ static void _pkt_receive(node_t *receiving_node,
 				recv_intf->if_name, receiving_node->node_name);
 		return;
 	}
+
+	/*Exit the flow if the interdace status is down*/
+	if(!IF_IS_UP(recv_intf)){
+		return;
+	}
 	
 	pkt_receive(receiving_node, recv_intf, pkt_with_aux_data+ MAX_NAME_SIZE,
 			pkt_size - MAX_NAME_SIZE);
+
+	recv_intf->intf_nw_prop.pkt_recv++;
 }
 
 /*Public API- used by othre modules*/
@@ -107,9 +114,14 @@ send_pkt_out(char *pkt, unsigned int pkt_size,
 	node_t *sending_node = interface->att_node;
 	node_t *nbr_node = get_nbr_node(interface);
 	
+	
 	if(!nbr_node)
 		return -1;
 	
+	/*Exit the flow if the interdace status is down*/
+	if(!IF_IS_UP(interface)){
+		return 0;
+	}
 	if(pkt_size + MAX_NAME_SIZE > MAX_PACKET_BUFFER_SIZE){
         printf("Error : Node :%s, Pkt Size exceeded\n", sending_node->node_name);
         return -1;
@@ -144,6 +156,9 @@ send_pkt_out(char *pkt, unsigned int pkt_size,
 	
 	rc = _send_pkt_out(sock, pkt_with_aux_data, pkt_size + MAX_NAME_SIZE, 
 				dst_udp_port_num);
+
+	interface->intf_nw_prop.pkt_sent++;	
+
 	close(sock);
 	return rc;
 }
