@@ -17,6 +17,17 @@ typedef struct ip_add_ {
 }ip_add_t;
 
 
+
+/*Interface Change Flags, used for Notification to
+ * Applications*/
+#define IF_UP_DOWN_CHANGE_F         (0)
+#define IF_IP_ADDR_CHANGE_F         (1)
+#define IF_OPER_MODE_CHANGE_F       (1 << 1)
+#define IF_VLAN_MEMBERSHIP_CHANGE_F (1 << 2)
+#define IF_METRIC_CHANGE_F          (1 << 3)
+
+
+
 typedef enum {
 	ACCESS,
 	TRUNK,
@@ -98,15 +109,26 @@ init_node_nw_prop(node_nw_prop_t *node_nw_prop ){
 }
 
 typedef struct intf_nw_props_ {
+	
+	/*L1 Properties*/
+	bool_t is_up;
+	
 	/*L2 Properies*/
 	mac_add_t mac_add;
 	intf_l2_mode_t intf_l2_mode;
 	unsigned int vlans[MAX_VLAN_MEMBERSHIP];
 	bool_t is_ipadd_config_backup;
+	
 	/*L3 Properties*/
 	bool_t is_ipadd_config; /*set to TRUE of ip add is configured. intf operates in L3 mode if set.*/
 	ip_add_t ip_addr;
 	char mask;
+
+	/*Interface Statistics*/
+	/*Interface Statistics*/
+    uint32_t pkt_recv;
+    uint32_t pkt_sent;
+
 }intf_nw_props_t;
 
 
@@ -125,6 +147,9 @@ init_intf_nw_prop(intf_nw_props_t *intf_nw_prop ){
     	memset(intf_nw_prop->vlans, 0, sizeof(intf_nw_prop->vlans));
 
 	intf_nw_prop->is_ipadd_config = FALSE;
+	intf_nw_prop->is_up = TRUE;
+	intf_nw_prop->pkt_recv = 0;
+	intf_nw_prop->pkt_sent = 0;
 	memset(intf_nw_prop->ip_addr.ip_add, 0, 16);
 	intf_nw_prop->mask = 0;
        	
@@ -141,6 +166,7 @@ init_intf_nw_prop(intf_nw_props_t *intf_nw_prop ){
 #define NODE_RT_TABLE(node_ptr)     	(node_ptr->node_nw_prop.rt_table)
 #define IF_L2_MODE(intf_ptr)    	(intf_ptr->intf_nw_prop.intf_l2_mode)
 #define IS_INTF_L3_MODE(intf_ptr)   	(intf_ptr->intf_nw_prop.is_ipadd_config == TRUE)
+#define IF_IS_UP(intf_ptr)		(intf_ptr->intf_nw_prop.is_up == TRUE)
 
 
 /*APIs to set Network Node properties*/
@@ -158,6 +184,8 @@ char *pkt_buffer_shift_right(char *pkt, unsigned int pkt_size,
 void dump_nw_graph(graph_t *graph);
 void dump_node_nw_props(node_t *node);
 void dump_intf_props(interface_t *interface);
+void dump_node_interface_stats(node_t *node);
+void dump_interface_stats(interface_t *interface);
 
 
 

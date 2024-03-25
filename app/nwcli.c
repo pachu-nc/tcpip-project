@@ -4,10 +4,16 @@
 #include "cmdtlv.h"
 #include "cmdcodes.h"
 #include "net.h"
+#include "utils.h"
 
 extern graph_t *topo;
 
 //node_t *root = NULL;
+
+
+/*extern void tcp_ip_traceoptions_cli(param_t *node_name_param,
+                                 param_t *intf_name_param);
+*/
 
 /* Display functions when user presses ?*/
 void
@@ -33,6 +39,22 @@ validate_node_extistence(char *node_name){
     printf("Error : Node %s do not exist\n", node_name);
     return VALIDATION_FAILED;
 }
+
+static int
+validate_if_up_down_status(char *value){
+
+    if(strncmp(value, "up", strlen("up")) == 0 &&
+        strlen("up") == strlen(value)){
+        return VALIDATION_SUCCESS;
+    }
+    else if(strncmp(value, "down", strlen("down")) == 0 &&
+            strlen("down") == strlen(value)){
+        return VALIDATION_SUCCESS;
+    }
+    return VALIDATION_FAILED;
+}
+
+
 
 /*Generic Topology Commands*/
 static int
@@ -338,6 +360,7 @@ intf_config_handler(param_t *param, ser_buff_t *tlv_buf,
    char *intf_name;
    unsigned int vlan_id;
    char *l2_mode_option;
+   char *if_up_down;
    int CMDCODE;
    tlv_struct_t *tlv = NULL;
    node_t *node;
@@ -355,6 +378,8 @@ intf_config_handler(param_t *param, ser_buff_t *tlv_buf,
             vlan_id = atoi(tlv->value);
         else if(strncmp(tlv->leaf_id, "l2-mode-val", strlen("l2-mode-val")) == 0)
             l2_mode_option = tlv->value;
+	 else if(strncmp(tlv->leaf_id, "if-up-down", strlen("if-up-down")) == 0)
+             if_up_down = tlv->value;
         else
             assert(0);
     } TLV_LOOP_END;
@@ -366,6 +391,8 @@ intf_config_handler(param_t *param, ser_buff_t *tlv_buf,
         printf("Error : Interface %s do not exist\n", interface->if_name);
         return -1;
     }
+    uint32_t if_change_flags = 0;
+
     switch(CMDCODE){
         case CMDCODE_INTF_CONFIG_L2_MODE:
             switch(enable_or_disable){
@@ -391,8 +418,63 @@ intf_config_handler(param_t *param, ser_buff_t *tlv_buf,
                     ;
             }
             break;
+	case CMDCODE_CONF_INTF_UP_DOWN:
+            if(strncmp(if_up_down, "up", strlen("up")) == 0){
+                if(interface->intf_nw_prop.is_up == FALSE){
+                    SET_BIT(if_change_flags, IF_UP_DOWN_CHANGE_F);
+                }
+                interface->intf_nw_prop.is_up = TRUE;
+            }
+            else{
+                if(interface->intf_nw_prop.is_up){
+                    SET_BIT(if_change_flags, IF_UP_DOWN_CHANGE_F);
+                }
+                interface->intf_nw_prop.is_up = FALSE;
+            }
+            /*if(IS_BIT_SET(if_change_flags, IF_UP_DOWN_CHANGE_F)){
+                                nfc_intf_invoke_notification_to_sbscribers(
+                                        interface, 0, if_change_flags);
+            }*/
+            break;
+
          default:
             ;    
+    }
+    return 0;
+}
+
+static int
+show_interface_handler(param_t *param, ser_buff_t *tlv_buf,
+                       op_mode enable_or_disable){
+
+    int CMDCODE;
+    node_t *node;
+    char *node_name;
+    char *protocol_name = NULL;
+
+    CMDCODE = EXTRACT_CMD_CODE(tlv_buf);
+
+    tlv_struct_t *tlv = NULL;
+
+    TLV_LOOP_BEGIN(tlv_buf, tlv){
+
+        if     (strncmp(tlv->leaf_id, "node-name", strlen("node-name")) ==0)
+            node_name = tlv->value;
+        else if(strncmp(tlv->leaf_id, "protocol-name", strlen("protocol-name")) ==0)
+            protocol_name = tlv->value;
+        else
+            assert(0);
+    } TLV_LOOP_END;
+
+    node = get_node_by_node_name(topo, node_name);
+
+    switch(CMDCODE){
+
+        case CMDCODE_SHOW_INTF_STATS:
+            dump_node_interface_stats(node);
+            break;
+        default:
+            ;
     }
     return 0;
 }
@@ -449,6 +531,32 @@ void nw_init_cli(){
                     init_param(&rt, CMD, "rt", show_rt_handler, 0, INVALID, 0, "Dump L3 Routing table");
                     libcli_register_param(&node_name, &rt);
                     set_param_cmd_code(&rt, CMDCODE_SHOW_NODE_RT_TABLE);
+                 }
+                 {
+                     /*show node <node-name> interface*/
+                    static param_t interface;
+                    init_param(&interface, CMD, "interface", 0, 0, INVALID, 0, "\"interface\" keyword");
+                    libcli_register_param(&node_name, &interface);
+                    {
+                        /*show node <node-name> interface statistics*/
+                        static param_t stats;
+                        init_param(&stats, CMD, "statistics", show_interface_handler, 0, INVALID, 0, "Interface Statistics");
+                        libcli_register_param(&interface, &stats);
+                        set_param_cmd_code(&stats, CMDCODE_SHOW_INTF_STATS);
+                        {
+                            /*show node <node-name> interface statistics protocol*/
+                            static param_t protocol;
+                            init_param(&protocol, CMD, "protocol", 0, 0, INVALID, 0, "Protocol specific intf stats");
+                            libcli_register_param(&stats, &protocol);
+                            {
+                                // /*show node <node-name> interface statistics protocol <protocol-name>*/
+                                // static param_t nmp;
+                                // init_param(&nmp, CMD, "nmp", nbrship_mgmt_handler, 0, INVALID, 0, "nmp (Nbr Mgmt Protocol)");
+                                // libcli_register_param(&protocol, &nmp);
+                                // set_param_cmd_code(&nmp, CMDCODE_SHOW_NODE_NMP_PROTOCOL_ALL_INTF_STATS);
+                            }
+                        }
+                    }
                  }
              }
          }
@@ -527,6 +635,8 @@ void nw_init_cli(){
                 init_param(&if_name, LEAF, 0, 0, 0, STRING, "if-name", "Interface Name");
                 libcli_register_param(&interface, &if_name);
                 {
+                    /*CLI for traceoptions at interface level are hooked up here in tree */
+                    // tcp_ip_traceoptions_cli(0, &if_name);
                     /*config node <node-name> interface <if-name> l2mode*/
                     static param_t l2_mode;
                     init_param(&l2_mode, CMD, "l2mode", 0, 0, INVALID, 0, "\"l2mode\" keyword");
@@ -537,7 +647,15 @@ void nw_init_cli(){
                         init_param(&l2_mode_val, LEAF, 0, intf_config_handler, validate_l2_mode_value,  STRING, "l2-mode-val", "access|trunk");
                         libcli_register_param(&l2_mode, &l2_mode_val);
                         set_param_cmd_code(&l2_mode_val, CMDCODE_INTF_CONFIG_L2_MODE);
-                    } 
+                    }
+                    {
+                       /*config node <node-name> interface <if-name> <up|down>*/
+                       static param_t if_up_down_status;
+                       init_param(&if_up_down_status, LEAF, 0, intf_config_handler, validate_if_up_down_status, STRING, "if-up-down", "<up | down>");
+                       libcli_register_param(&if_name, &if_up_down_status);
+                       set_param_cmd_code(&if_up_down_status, CMDCODE_CONF_INTF_UP_DOWN);
+                    }
+ 
                 }
                 {
                     /*config node <node-name> interface <if-name> vlan*/

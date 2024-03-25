@@ -22,6 +22,7 @@ set(LAYER2_LIB_NAME layer2)
 set(LAYER3_LIB_NAME layer3)
 set(LAYER5_LIB_NAME ping)
 set(EXECUTABLE tcpip_appl)
+set(PKT_GEN pkt_gen_appl)
 
 
 #set cmake module path variable

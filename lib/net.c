@@ -195,3 +195,27 @@ pkt_buffer_shift_right(char *pkt, unsigned int pkt_size,
     return pkt + (total_buffer_size - pkt_size);
 
 }
+
+void
+dump_interface_stats(interface_t *interface){
+
+    printf("%s   ::  PktTx : %u, PktRx : %u",
+        interface->if_name, interface->intf_nw_prop.pkt_sent,
+        interface->intf_nw_prop.pkt_recv);
+}
+
+void
+dump_node_interface_stats(node_t *node){
+
+    interface_t *interface;
+
+    uint32_t i = 0;
+
+    for(; i < MAX_INTF_PER_NODE; i++){
+        interface = node->intf[i];
+        if(!interface)
+            return;
+        dump_interface_stats(interface);
+        printf("\n");
+    }
+}
