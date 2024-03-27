@@ -143,7 +143,6 @@ node_get_matching_subnet_interface(node_t *node, char *ip_addr){
     }
 }
 
-
 void dump_nw_graph(graph_t *graph){
     node_t *node;
     interface_t *interface;
@@ -218,4 +217,75 @@ dump_node_interface_stats(node_t *node){
         dump_interface_stats(interface);
         printf("\n");
     }
+}
+
+/*Helper functions*/
+
+bool_t
+is_same_subnet(char *ip_addr, char mask,
+               char *other_ip_addr){
+
+    char intf_subnet[16];
+    char subnet2[16];
+
+    memset(intf_subnet, 0 , 16);
+    memset(subnet2, 0 , 16);
+
+    apply_mask(ip_addr, mask, intf_subnet);
+    apply_mask(other_ip_addr, mask, subnet2);
+
+    if(strncmp(intf_subnet, subnet2, 16) == 0){
+        return TRUE;
+    }
+    return FALSE;
+
+}
+
+
+/*R1-eth0 is said to be bidirectional only if
+*   1. R1-eth0 and neighbour R2-eth1 are up &&
+*   2. R1-eth0 and R2-eth1 and both configured with IP address &&
+*   3. IP addersses are in the same subnet
+*   4. None of the interfaces are operating in the L2 mode(ACCESS/TRUNK)
+*/
+bool_t
+is_interface_l3_bidirectional(interface_t *interface){
+ 
+    /*if interface is in L2 mode*/
+    if(IF_L2_MODE(interface) == ACCESS ||
+        IF_L2_MODE(interface) == TRUNK)
+        return FALSE;
+
+    /* If interface is not configured
+     * with IP address*/
+    if(!IS_INTF_L3_MODE(interface))
+        return FALSE;
+
+    interface_t *other_interface = &interface->link->intf1 == interface ?    \
+            &interface->link->intf2 : &interface->link->intf1;
+
+    if(!other_interface)
+        return FALSE;
+
+    if(!IF_IS_UP(interface) ||
+            !IF_IS_UP(other_interface)){
+        return FALSE;
+    }
+
+    if(IF_L2_MODE(other_interface) == ACCESS ||
+        IF_L2_MODE(interface) == TRUNK)
+        return FALSE;
+
+    if(!IS_INTF_L3_MODE(other_interface))
+        return FALSE;
+
+    if(!(is_same_subnet(IF_IP(interface), IF_MASK(interface),
+        IF_IP(other_interface)) &&
+        is_same_subnet(IF_IP(other_interface), IF_MASK(other_interface),
+        IF_IP(interface)))){
+        return FALSE;
+    }
+
+    return TRUE;
+
 }

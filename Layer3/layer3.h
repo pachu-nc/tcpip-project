@@ -2,6 +2,7 @@
 #define __LAYER3_H__
 
 #include "glthread.h"
+#include "tcpconst.h"
 #pragma pack (push,1)
 
 /*The Ip hdr format as per the standard specification*/
@@ -55,19 +56,28 @@ initialize_ip_hdr(ip_hdr_t *ip_hdr){
     ip_hdr->dst_ip = 0; /*To be filled by the caller*/
 }
 
+#define nexthop_node_name(nexthop_ptr)  \
+   ((get_nbr_node(nexthop_ptr->oif))->node_name)
 
 
 typedef struct rt_table_{
 	glthread_t route_list;
 }rt_table_t;
 
+typedef struct nexthop_{
+
+    char gw_ip[16];
+    interface_t *oif;
+    uint32_t ref_count;
+} nexthop_t;
 
 typedef struct l3_route_{
 	char dest[16]; /*Key*/
 	char mask;	/*Key*/
 	bool_t is_direct; /*if set to True, then gw_ip and oif has no meaning*/
-	char gw_ip[16]; /*Next hop IP*/
-	char oif[MAX_NAME_SIZE]; /*OIF*/
+    nexthop_t *nexthops[MAX_NXT_HOPS];
+    uint32_t spf_metric;
+    int nxthop_idx;
 	glthread_t rt_glue;
 }l3_route_t;
 
@@ -83,7 +93,7 @@ delete_rt_table_entry(rt_table_t *rt_table, char *ip_addr, char mask);
 void
 rt_table_add_route(rt_table_t *rt_table, 
                    char *dst, char mask,
-                   char *gw, char *oif);
+                   char *gw, char *oif, uint32_t spf_metric);
 
 void
 rt_table_add_direct_route(rt_table_t *rt_table,
@@ -96,6 +106,14 @@ dump_rt_table(rt_table_t *rt_table);
 l3_route_t*
 l3rib_lookup_lpm(rt_table_t *rt_table,
                  unsigned int dest_ip);
+
+
+l3_route_t *
+l3rib_lookup(rt_table_t *rt_table,
+             uint32_t dest_ip,
+             char mask);
+nexthop_t *
+l3_route_get_active_nexthop(l3_route_t *l3_route);
 
 #define IP_HDR_LEN_IN_BYTES(ip_hdr_ptr)  (ip_hdr_ptr->ihl * 4)
 #define IP_HDR_TOTAL_LEN_IN_BYTES(ip_hdr_ptr)   (ip_hdr_ptr->total_length * 4)

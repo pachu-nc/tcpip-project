@@ -54,6 +54,7 @@ typedef struct link_ {
  * 
  *
  * */
+typedef struct spf_data_ spf_data_t;
 
 typedef struct node_ {
 	char node_name[MAX_NAME_SIZE];
@@ -62,7 +63,16 @@ typedef struct node_ {
 	int udp_port_number; /*Unque udp port num that the node listens on*/
 	int udp_sock_fd;	/*udp sock fd that is opened by the node*/
 	node_nw_prop_t node_nw_prop;
+	
+	/*SPF Calculation*/
+	spf_data_t *spf_data;
 }node_t;
+
+static inline uint32_t
+get_link_cost(interface_t *interface){
+
+    return interface->link->cost;
+}
 
 
 /*@brief
@@ -85,7 +95,7 @@ graph_t *build_simple_l2_switch_topo(void);
 graph_t *build_dualswitch_topo(void);
 graph_t *linear_3_node_topo(void);
 graph_t *build_square_topo();
-
+void 	init_tcp_ip_stack();
 node_t  *create_graph_node(graph_t *, char*);
 
 

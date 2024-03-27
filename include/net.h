@@ -157,16 +157,36 @@ init_intf_nw_prop(intf_nw_props_t *intf_nw_prop ){
 
 /*GET shorthand Macros*/
 
-#define IF_MAC(intf_ptr)		((intf_ptr)->intf_nw_prop.mac_add.mac)
-#define IF_IP(intf_ptr)			((intf_ptr)->intf_nw_prop.ip_addr.ip_add)
+#define IF_MAC(intf_ptr)				((intf_ptr)->intf_nw_prop.mac_add.mac)
+#define IF_IP(intf_ptr)					((intf_ptr)->intf_nw_prop.ip_addr.ip_add)
 
-#define NODE_LO_ADDR(node_ptr)		(node_ptr->node_nw_prop.lb_addr.ip_add)
+#define NODE_LO_ADDR(node_ptr)			(node_ptr->node_nw_prop.lb_addr.ip_add)
 #define NODE_ARP_TABLE(node_ptr)    	(node_ptr->node_nw_prop.arp_table)
 #define NODE_MAC_TABLE(node_ptr)    	(node_ptr->node_nw_prop.mac_table)
 #define NODE_RT_TABLE(node_ptr)     	(node_ptr->node_nw_prop.rt_table)
-#define IF_L2_MODE(intf_ptr)    	(intf_ptr->intf_nw_prop.intf_l2_mode)
+
+
+#define IF_L2_MODE(intf_ptr)    		(intf_ptr->intf_nw_prop.intf_l2_mode)
 #define IS_INTF_L3_MODE(intf_ptr)   	(intf_ptr->intf_nw_prop.is_ipadd_config == TRUE)
-#define IF_IS_UP(intf_ptr)		(intf_ptr->intf_nw_prop.is_up == TRUE)
+#define IF_IS_UP(intf_ptr)				(intf_ptr->intf_nw_prop.is_up == TRUE)
+#define IF_MASK(intf_ptr)  				((intf_ptr)->intf_nw_prop.mask)
+
+/*Macros to Iterate over Nbrs of a node*/
+
+#define ITERATE_NODE_NBRS_BEGIN(node_ptr, nbr_ptr, oif_ptr, ip_addr_ptr) \
+    do{                                                                  \
+        int i = 0 ;                                                      \
+        interface_t *other_intf;                                         \
+        for( i = 0 ; i < MAX_INTF_PER_NODE; i++){                        \
+            oif_ptr = node_ptr->intf[i];                                 \
+            if(!oif_ptr) continue;                                       \
+            other_intf = &oif_ptr->link->intf1 == oif_ptr ?              \
+            &oif_ptr->link->intf2 : &oif_ptr->link->intf1;               \
+            if(!other_intf) continue;                                    \
+            nbr_ptr = get_nbr_node(oif_ptr);                             \
+            ip_addr_ptr = IF_IP(other_intf);                             \
+
+#define ITERATE_NODE_NBRS_END(node_ptr, nbr_ptr, oif_ptr, ip_addr_ptr)  }}while(0);
 
 
 /*APIs to set Network Node properties*/
@@ -193,5 +213,11 @@ void dump_interface_stats(interface_t *interface);
 interface_t *
 node_get_matching_subnet_interface(node_t *node, char *ip_addr);
 
+bool_t
+is_interface_l3_bidirectional(interface_t *interface);
+
+bool_t
+is_same_subnet(char *ip_addr, char mask,
+               char *other_ip_addr);
 
 #endif /*_NET_H_*/
