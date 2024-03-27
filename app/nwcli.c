@@ -5,7 +5,8 @@
 #include "cmdcodes.h"
 #include "net.h"
 #include "utils.h"
-
+#include "app_handlers.h"
+#include "tcpconst.h"
 extern graph_t *topo;
 
 //node_t *root = NULL;
@@ -54,6 +55,14 @@ validate_if_up_down_status(char *value){
     return VALIDATION_FAILED;
 }
 
+static int
+validate_interface_metric_val(char *value){
+
+    uint32_t metric_val = atoi(value);
+    if(metric_val > 0 && metric_val <= INTF_MAX_METRIC)
+        return VALIDATION_SUCCESS;
+    return VALIDATION_FAILED;
+}
 
 
 /*Generic Topology Commands*/
@@ -365,6 +374,8 @@ intf_config_handler(param_t *param, ser_buff_t *tlv_buf,
    tlv_struct_t *tlv = NULL;
    node_t *node;
    interface_t *interface;
+   uint32_t intf_new_matric_val;
+
 
    CMDCODE = EXTRACT_CMD_CODE(tlv_buf);
    
@@ -380,6 +391,9 @@ intf_config_handler(param_t *param, ser_buff_t *tlv_buf,
             l2_mode_option = tlv->value;
 	 else if(strncmp(tlv->leaf_id, "if-up-down", strlen("if-up-down")) == 0)
              if_up_down = tlv->value;
+    else if(strncmp(tlv->leaf_id, "metric-val", strlen("metric-val")) == 0)
+            intf_new_matric_val = atoi(tlv->value);
+
         else
             assert(0);
     } TLV_LOOP_END;
@@ -532,6 +546,13 @@ void nw_init_cli(){
                     libcli_register_param(&node_name, &rt);
                     set_param_cmd_code(&rt, CMDCODE_SHOW_NODE_RT_TABLE);
                  }
+		 {
+                    /*show node <node-name> spf-result*/
+                    static param_t spf_result;
+                    init_param(&spf_result, CMD, "spf-result", spf_algo_handler, 0, INVALID, 0, "SPF Results");
+                    libcli_register_param(&node_name, &spf_result);
+                    set_param_cmd_code(&spf_result, CMDCODE_SHOW_SPF_RESULTS);
+                 }
                  {
                      /*show node <node-name> interface*/
                     static param_t interface;
@@ -560,6 +581,20 @@ void nw_init_cli(){
                  }
              }
          }
+    }
+    
+    {
+        /*run spf*/
+        static param_t spf;
+        init_param(&spf, CMD, "spf", 0, 0, INVALID, 0, "Shortest SPF Path");
+        libcli_register_param(run, &spf);
+        {
+            /*run spf all*/
+            static param_t all;
+            init_param(&all, CMD, "all" , spf_algo_handler, 0, INVALID, 0, "All nodes");
+            libcli_register_param(&spf, &all);
+            set_param_cmd_code(&all, CMDCODE_RUN_SPF_ALL);
+        }
     }
 
 	{
@@ -610,6 +645,15 @@ void nw_init_cli(){
                 			    set_param_cmd_code(&ip_addr, CMDCODE_RUN_ARP);
                 			}
 				}
+
+                {
+                    /*run node <node-name> spf*/
+                    static param_t spf;
+                    init_param(&spf, CMD, "spf", spf_algo_handler, 0, INVALID, 0, "Trigger SPF");
+                    libcli_register_param(&node_name, &spf);
+                    set_param_cmd_code(&spf, CMDCODE_RUN_SPF);
+                }
+
 			}
 		}
 	}
@@ -656,6 +700,17 @@ void nw_init_cli(){
                        set_param_cmd_code(&if_up_down_status, CMDCODE_CONF_INTF_UP_DOWN);
                     }
  
+                }
+                {
+                    static param_t metric;
+                    init_param(&metric, CMD, "metric", 0, 0, INVALID, 0, "Interface Metric");
+                    libcli_register_param(&if_name, &metric);
+                    {
+                        static param_t metric_val;
+                        init_param(&metric_val, LEAF, 0, intf_config_handler, validate_interface_metric_val, INT, "metric-val", "Metric Value(1-16777215)");
+                        libcli_register_param(&metric, &metric_val);
+                        set_param_cmd_code(&metric_val, CMDCODE_INTF_CONFIG_METRIC);
+                    }
                 }
                 {
                     /*config node <node-name> interface <if-name> vlan*/

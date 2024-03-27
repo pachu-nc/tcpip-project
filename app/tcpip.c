@@ -159,6 +159,7 @@ int main() {
 //	topo =	linear_3_node_topo();
 	topo =	build_square_topo();
 //	printf("Topology = %x\n", topo);
+	init_tcp_ip_stack();
 #if 0
 	/*Sleep for sometime*/
 

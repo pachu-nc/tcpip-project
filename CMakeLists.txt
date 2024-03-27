@@ -21,6 +21,8 @@ set(GLUE_DIR_LIB gluethread)
 set(LAYER2_LIB_NAME layer2)
 set(LAYER3_LIB_NAME layer3)
 set(LAYER5_LIB_NAME ping)
+set(SPF_LIB_NAME spf)
+set(TCP_STACK_LIB_NAME tcp)
 set(EXECUTABLE tcpip_appl)
 set(PKT_GEN pkt_gen_appl)
 

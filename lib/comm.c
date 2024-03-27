@@ -177,6 +177,7 @@ _network_start_receiver_thread( void * arg){
 	graph_t *topo = (void *) arg;
 
 	int addr_len = sizeof(struct sockaddr);
+	
 	/*Initialize the socket descriptors to 0*/
 	FD_ZERO(&active_sock_fd_set);
 	FD_ZERO(&backup_sock_fd_set);

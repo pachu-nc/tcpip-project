@@ -16,16 +16,20 @@ set(GRAPH_LIB_SRC
 	"comm.c"
 	"topologies.c"
 	"utils.c")
+set(TCP_STACK_LIB_SRC
+	"tcp_stack_init.c")
 
 #add_library(${LIB_NAME} STATIC ${LIB_SRC})
 add_library(${DLL_LIB_NAME} STATIC ${DLL_LIB_SRC})
 add_library(${GRAPH_LIB_NAME} STATIC ${GRAPH_LIB_SRC})
+add_library(${TCP_STACK_LIB_NAME} STATIC ${TCP_STACK_LIB_SRC})
 
 #include the incude directory
 
 #target_include_directories(${LIB_NAME} PUBLIC "../include")
 target_include_directories(${DLL_LIB_NAME} PUBLIC "../include")
 target_include_directories(${GRAPH_LIB_NAME} PUBLIC "../include")
+target_include_directories(${TCP_STACK_LIB_NAME} PUBLIC "../include")
 
 #target_link_libraries(${GRAPH_LIB_NAME} PRIVATE ${DLL_LIB_NAME})
 #Enable Warnings
@@ -38,6 +42,10 @@ if(${ENABLE_WARNINGS})
 		)
 
 	target_set_warnings(${GRAPH_LIB_NAME}
+		${ENABLE_WARNINGS}
+		${ENABLE_WARNINGS_AS_ERRORS}
+		)
+	target_set_warnings(${TCP_STACK_LIB_NAME}
 		${ENABLE_WARNINGS}
 		${ENABLE_WARNINGS_AS_ERRORS}
 		)
